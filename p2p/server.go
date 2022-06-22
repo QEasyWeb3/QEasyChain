@@ -23,6 +23,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/p2p/permissions"
 	"net"
 	"sort"
 	"sync"
@@ -151,6 +152,9 @@ type Config struct {
 	// If EnableMsgEvents is set then the server will emit PeerEvents
 	// whenever a message is sent to or received from a peer
 	EnableMsgEvents bool
+
+	EnableNodePermission bool   `toml:",omitempty"`
+	DataDir              string `toml:",omitempty"`
 
 	// Logger is a custom logger to use with the p2p.Server.
 	Logger log.Logger `toml:",omitempty"`
@@ -988,6 +992,32 @@ func (srv *Server) setupConn(c *conn, flags connFlag, dialDest *enode.Node) erro
 		return err
 	}
 
+	currentNode := srv.NodeInfo().ID
+	cnodeName := srv.NodeInfo().Name
+	clog.Trace("Node permissioning",
+		"EnableNodePermission", srv.EnableNodePermission,
+		"DataDir", srv.DataDir,
+		"Current Node ID", currentNode,
+		"Node Name", cnodeName,
+		"Dialed Dest", dialDest,
+		"Connection ID", c.node.ID(),
+		"Connection String", c.node.ID().String())
+
+	if srv.EnableNodePermission {
+		clog.Trace("Node Permissioning is Enabled.")
+		nodeId := c.node.ID().String()
+		direction := "INCOMING"
+		if dialDest != nil {
+			nodeId = dialDest.ID().String()
+			direction = "OUTGOING"
+			log.Trace("Node Permissioning", "Connection Direction", direction)
+		}
+		if !permissions.IsNodePermissioned(nodeId, currentNode, srv.DataDir, direction) {
+			return newPeerError(errPermissionDenied, "id=%s…%s %s id=%s…%s", currentNode[:4], currentNode[len(currentNode)-4:], direction, nodeId[:4], nodeId[len(nodeId)-4:])
+		}
+	} else {
+		clog.Trace("Node Permissioning is Disabled.")
+	}
 	return nil
 }
 

@@ -20,9 +20,14 @@ import (
 	"crypto/ecdsa"
 	"crypto/sha256"
 	"errors"
+	"github.com/ethereum/go-ethereum/p2p/permissions"
+	"github.com/stretchr/testify/assert"
 	"io"
+	"io/ioutil"
 	"math/rand"
 	"net"
+	"os"
+	"path"
 	"reflect"
 	"testing"
 	"time"
@@ -453,6 +458,44 @@ func TestServerSetupConn(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestServerSetupConn_whenNotPermissioned(t *testing.T) {
+	tmpDir, err := ioutil.TempDir("", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = os.RemoveAll(tmpDir) }()
+	if err := ioutil.WriteFile(path.Join(tmpDir, permissions.PERMISSIONED_CONFIG), []byte("[]"), 0644); err != nil {
+		t.Fatal(err)
+	}
+	var (
+		clientkey, srvkey = newkey(), newkey()
+		clientpub         = &clientkey.PublicKey
+	)
+	clientNode := enode.NewV4(clientpub, nil, 0, 0)
+	srv := &Server{
+		Config: Config{
+			PrivateKey:           srvkey,
+			MaxPeers:             10,
+			NoDiscovery:          true,
+			DataDir:              tmpDir,
+			EnableNodePermission: true,
+		},
+		newTransport: func(fd net.Conn, key *ecdsa.PublicKey) transport { return newTestTransport(clientpub, fd, key) },
+		log:          log.New(),
+	}
+	if err := srv.Start(); err != nil {
+		t.Fatalf("couldn't start server: %v", err)
+	}
+	defer srv.Stop()
+	p1, _ := net.Pipe()
+	err = srv.SetupConn(p1, inboundConn, clientNode)
+
+	assert.IsType(t, &peerError{}, err)
+	perr := err.(*peerError)
+	t.Log(perr.Error())
+	assert.Equal(t, errPermissionDenied, perr.code)
 }
 
 type setupTransport struct {

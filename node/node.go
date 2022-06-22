@@ -145,6 +145,9 @@ func New(conf *Config) (*Node, error) {
 		return nil, err
 	}
 
+	node.server.Config.EnableNodePermission = node.config.EnableNodePermission
+	node.server.Config.DataDir = node.config.DataDir
+
 	// Configure RPC servers.
 	node.http = newHTTPServer(node.log, conf.HTTPTimeouts)
 	node.ws = newHTTPServer(node.log, rpc.DefaultHTTPTimeouts)
