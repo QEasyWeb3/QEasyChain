@@ -18,18 +18,19 @@
 package web3ext
 
 var Modules = map[string]string{
-	"admin":    AdminJs,
-	"clique":   CliqueJs,
-	"ethash":   EthashJs,
-	"debug":    DebugJs,
-	"eth":      EthJs,
-	"miner":    MinerJs,
-	"net":      NetJs,
-	"personal": PersonalJs,
-	"rpc":      RpcJs,
-	"txpool":   TxpoolJs,
-	"les":      LESJs,
-	"vflux":    VfluxJs,
+	"admin":     AdminJs,
+	"clique":    CliqueJs,
+	"democracy": DemocracyJs,
+	"ethash":    EthashJs,
+	"debug":     DebugJs,
+	"eth":       EthJs,
+	"miner":     MinerJs,
+	"net":       NetJs,
+	"personal":  PersonalJs,
+	"rpc":       RpcJs,
+	"txpool":    TxpoolJs,
+	"les":       LESJs,
+	"vflux":     VfluxJs,
 }
 
 const CliqueJs = `
@@ -84,6 +85,36 @@ web3._extend({
 		new web3._extend.Property({
 			name: 'proposals',
 			getter: 'clique_proposals'
+		}),
+	]
+});
+`
+
+const DemocracyJs = `
+web3._extend({
+	property: 'democracy',
+	methods: [
+		new web3._extend.Method({
+			name: 'getSnapshot',
+			call: 'democracy_getSnapshot',
+			params: 1,
+			inputFormatter: [web3._extend.formatters.inputBlockNumberFormatter]
+		}),
+		new web3._extend.Method({
+			name: 'getSnapshotAtHash',
+			call: 'democracy_getSnapshotAtHash',
+			params: 1
+		}),
+		new web3._extend.Method({
+			name: 'getValidators',
+			call: 'democracy_getValidators',
+			params: 1,
+			inputFormatter: [web3._extend.formatters.inputBlockNumberFormatter]
+		}),
+		new web3._extend.Method({
+			name: 'getValidatorsAtHash',
+			call: 'democracy_getValidatorsAtHash',
+			params: 1
 		}),
 	]
 });
@@ -576,6 +607,49 @@ web3._extend({
 			params: 3,
 			inputFormatter: [null, web3._extend.formatters.inputBlockNumberFormatter, null]
 		}),
+		new web3._extend.Method({
+			name: 'getSysTransactionsByBlockNumber',
+			call: 'eth_getSysTransactionsByBlockNumber',
+			params: 1,
+			inputFormatter: [web3._extend.formatters.inputBlockNumberFormatter]
+		}),
+		new web3._extend.Method({
+			name: 'getSysTransactionsByBlockHash',
+			call: 'eth_getSysTransactionsByBlockHash',
+			params: 1
+		}),
+		new web3._extend.Method({
+			name: 'getDoubleSignPunishTransactionsByBlockNumber',
+			call: 'eth_getDoubleSignPunishTransactionsByBlockNumber',
+			params: 1,
+			inputFormatter: [web3._extend.formatters.inputBlockNumberFormatter]
+		}),
+		new web3._extend.Method({
+			name: 'getDoubleSignPunishTransactionsByBlockHash',
+			call: 'eth_getDoubleSignPunishTransactionsByBlockHash',
+			params: 1
+		}),
+		new web3._extend.Method({
+			name: 'getBlockPredictStatus',
+			call: 'eth_getBlockPredictStatus',
+			params: 2,
+			inputFormatter: [web3._extend.utils.toHex,web3._extend.formatters.inputBlockNumberFormatter]
+		}),
+		new web3._extend.Method({
+			name: 'getLastFinalizedBlockInfo',
+			call: 'eth_getLastFinalizedBlockInfo',
+			outputFormatter: function(statusBlockInfo) {
+				statusBlockInfo.Number = web3._extend.utils.toDecimal(statusBlockInfo.Number);
+				statusBlockInfo.Hash = web3._extend.utils.toHex(statusBlockInfo.Hash);
+				return statusBlockInfo;
+			}
+		}),
+		new web3._extend.Method({
+			name: 'getTransactionReceiptExt',
+			call: 'eth_getTransactionReceiptExt',
+			params: 1,
+			outputFormatter: web3._extend.formatters.outputTransactionReceiptFormatter
+		}),
 	],
 	properties: [
 		new web3._extend.Property({
@@ -594,6 +668,10 @@ web3._extend({
 			name: 'maxPriorityFeePerGas',
 			getter: 'eth_maxPriorityFeePerGas',
 			outputFormatter: web3._extend.utils.toBigNumber
+		}),
+		new web3._extend.Property({
+			name: 'gasPricePrediction',
+			getter: 'eth_gasPricePrediction'
 		}),
 	]
 });
@@ -644,6 +722,14 @@ web3._extend({
 		new web3._extend.Method({
 			name: 'getHashrate',
 			call: 'miner_getHashrate'
+		}),
+		new web3._extend.Method({
+			name: 'startAttestation',
+			call: 'miner_startAttestation'
+		}),
+		new web3._extend.Method({
+			name: 'stopAttestation',
+			call: 'miner_stopAttestation'
 		}),
 	],
 	properties: []
@@ -759,6 +845,10 @@ web3._extend({
 			name: 'contentFrom',
 			call: 'txpool_contentFrom',
 			params: 1,
+		}),
+		new web3._extend.Property({
+			name: 'jamIndex',
+			getter: 'txpool_jamIndex'
 		}),
 	]
 });
