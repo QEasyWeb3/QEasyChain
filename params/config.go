@@ -42,7 +42,7 @@ var CheckpointOracles = map[common.Hash]*CheckpointOracleConfig{}
 var (
 	// MainnetChainConfig is the chain parameters to run a node on the main network.
 	MainnetChainConfig = &ChainConfig{
-		ChainID:             big.NewInt(128),
+		ChainID:             big.NewInt(9527),
 		HomesteadBlock:      big.NewInt(0),
 		DAOForkBlock:        nil,
 		DAOForkSupport:      true,
@@ -54,25 +54,19 @@ var (
 		PetersburgBlock:     big.NewInt(0),
 		IstanbulBlock:       big.NewInt(0),
 		MuirGlacierBlock:    nil,
-		RedCoastBlock:       big.NewInt(6618800),
-		BerlinBlock:         big.NewInt(8577000),
-		LondonBlock:         big.NewInt(8577000),
-		SophonBlock:         big.NewInt(8577000),
-		ArrowGlacierBlock:   nil,
-		WaterdropBlock:      nil,
-
+		BerlinBlock:         big.NewInt(0),
+		LondonBlock:         big.NewInt(0),
 		Democracy: &DemocracyConfig{
-			Period: 3,
-			Epoch:  200,
-
-			EnableDevVerification: true,
+			Period:                3,
+			Epoch:                 200,
 			AttestationDelay:      2,
+			EnableDevVerification: true,
 		},
 	}
 
 	// TestnetChainConfig contains the chain parameters to run a node on the YOLOv1 test network.
 	TestnetChainConfig = &ChainConfig{
-		ChainID:             big.NewInt(256),
+		ChainID:             big.NewInt(9528),
 		HomesteadBlock:      big.NewInt(0),
 		DAOForkBlock:        nil,
 		DAOForkSupport:      true,
@@ -84,16 +78,14 @@ var (
 		PetersburgBlock:     big.NewInt(0),
 		IstanbulBlock:       big.NewInt(0),
 		MuirGlacierBlock:    nil,
-		RedCoastBlock:       big.NewInt(6072600),
-		BerlinBlock:         big.NewInt(8290000),
-		LondonBlock:         big.NewInt(8290000),
-		SophonBlock:         big.NewInt(8290000),
-		WaterdropBlock:      nil,
+		BerlinBlock:         big.NewInt(0),
+		LondonBlock:         big.NewInt(0),
 		Democracy: &DemocracyConfig{
 			Period: 3,
 			Epoch:  200,
 
-			AttestationDelay: 2,
+			AttestationDelay:      2,
+			EnableDevVerification: true,
 		},
 	}
 
@@ -137,8 +129,7 @@ var (
 )
 
 var (
-	DefaultContinuousInturn  = uint64(1)
-	WaterdropContinousInturn = uint64(4)
+	ContinousInturn = uint64(4)
 )
 
 // TrustedCheckpoint represents a set of post-processed trie roots (CHT and
@@ -222,10 +213,6 @@ type ChainConfig struct {
 	// the network that triggers the consensus upgrade.
 	TerminalTotalDifficulty *big.Int `json:"terminalTotalDifficulty,omitempty"`
 
-	RedCoastBlock  *big.Int `json:"redCoastBlock,omitempty"`  // RedCoast switch block (nil = no fork, set value ≥ 2 to activate it)
-	SophonBlock    *big.Int `json:"sophonBlock,omitempty"`    // Sophon switch block (nil = no fork, set > RedCoastBlock to activate it)
-	WaterdropBlock *big.Int `json:"waterdropBlock,omitempty"` // Waterdrop switch block (nil = no fork, set > SophonBlock to activate it)
-
 	// Various consensus engines
 	Ethash    *EthashConfig    `json:"ethash,omitempty"`
 	Clique    *CliqueConfig    `json:"clique,omitempty"`
@@ -294,11 +281,8 @@ func (c *ChainConfig) String() string {
 		c.PetersburgBlock,
 		c.IstanbulBlock,
 		c.MuirGlacierBlock,
-		c.RedCoastBlock,
 		c.BerlinBlock,
 		c.LondonBlock,
-		c.SophonBlock,
-		c.WaterdropBlock,
 		engine,
 	)
 }
@@ -378,21 +362,6 @@ func (c *ChainConfig) IsTerminalPoWBlock(parentTotalDiff *big.Int, totalDiff *bi
 	return parentTotalDiff.Cmp(c.TerminalTotalDifficulty) < 0 && totalDiff.Cmp(c.TerminalTotalDifficulty) >= 0
 }
 
-// IsRedCoast returns whether num represents a block number after the RedCoast fork
-func (c *ChainConfig) IsRedCoast(num *big.Int) bool {
-	return isForked(c.RedCoastBlock, num)
-}
-
-// IsSophon returns whether num represents a block number after the SophonBlock fork
-func (c *ChainConfig) IsSophon(num *big.Int) bool {
-	return isForked(c.SophonBlock, num)
-}
-
-// IsWaterdrop returns whether num represents a block number after the WaterdropBlock fork
-func (c *ChainConfig) IsWaterdrop(num *big.Int) bool {
-	return isForked(c.WaterdropBlock, num)
-}
-
 // CheckCompatible checks whether scheduled fork transitions have been imported
 // with a mismatching chain configuration.
 func (c *ChainConfig) CheckCompatible(newcfg *ChainConfig, height uint64) *ConfigCompatError {
@@ -453,45 +422,11 @@ func (c *ChainConfig) CheckConfigForkOrder() error {
 			lastFork = cur
 		}
 	}
-	// democracy fork
-	lastFork = fork{}
-	for _, cur := range []fork{
-		{name: "redCoastBlock", block: c.RedCoastBlock, minValue: big.NewInt(2)},
-		{name: "sophonBlock", block: c.SophonBlock},
-		{name: "waterdropBlock", block: c.WaterdropBlock},
-	} {
-		// check minimal fork block
-		if cur.block != nil && cur.minValue != nil {
-			if cur.block.Cmp(cur.minValue) < 0 {
-				return fmt.Errorf("unsupported fork ordering: %v enabled at %v, but it must greater than %v ", cur.name, cur.block, cur.minValue)
-			}
-		}
-		if lastFork.name != "" {
-			// Next one must be higher number
-			if lastFork.block == nil && cur.block != nil {
-				return fmt.Errorf("unsupported fork ordering: %v not enabled, but %v enabled at %v",
-					lastFork.name, cur.name, cur.block)
-			}
-			if lastFork.block != nil && cur.block != nil {
-				if lastFork.block.Cmp(cur.block) >= 0 {
-					return fmt.Errorf("unsupported fork ordering: %v enabled at %v, but %v enabled at %v",
-						lastFork.name, lastFork.block, cur.name, cur.block)
-				}
-			}
-		}
-		// If it was optional and not set, then ignore it
-		if !cur.optional || cur.block != nil {
-			lastFork = cur
-		}
-	}
 	return nil
 }
 
-func (c *ChainConfig) DemocracyContinuousInturn(blockNumber *big.Int) uint64 {
-	if c.IsWaterdrop(blockNumber) {
-		return WaterdropContinousInturn
-	}
-	return DefaultContinuousInturn
+func (c *ChainConfig) DemocracyContinuousInturn() uint64 {
+	return ContinousInturn
 }
 
 func (c *ChainConfig) checkCompatible(newcfg *ChainConfig, head *big.Int) *ConfigCompatError {
@@ -540,9 +475,6 @@ func (c *ChainConfig) checkCompatible(newcfg *ChainConfig, head *big.Int) *Confi
 	}
 	if isForkIncompatible(c.LondonBlock, newcfg.LondonBlock, head) {
 		return newCompatError("London fork block", c.LondonBlock, newcfg.LondonBlock)
-	}
-	if isForkIncompatible(c.RedCoastBlock, newcfg.RedCoastBlock, head) {
-		return newCompatError("RedCoast fork block", c.RedCoastBlock, newcfg.RedCoastBlock)
 	}
 	if isForkIncompatible(c.ArrowGlacierBlock, newcfg.ArrowGlacierBlock, head) {
 		return newCompatError("Arrow Glacier fork block", c.ArrowGlacierBlock, newcfg.ArrowGlacierBlock)
