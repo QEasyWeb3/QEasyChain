@@ -265,7 +265,7 @@ func TestDistributeBlockFee(t *testing.T) {
 	getValidatorFee := func(val common.Address) *big.Int {
 		contract, ok := readSystemContract(t, ctx, "valMaps", val).(common.Address)
 		assert.True(t, ok, "invalid contract format")
-		fee, ok := readContract(t, ctx, &contract, "currFeeRewards").(*big.Int)
+		fee, ok := readContract(t, ctx, contract, "currFeeRewards").(*big.Int)
 		assert.True(t, ok, "invalid fee format")
 		return fee
 	}
@@ -713,10 +713,10 @@ func initCallContext() (*CallContext, error) {
 }
 
 func readSystemContract(t *testing.T, ctx *CallContext, method string, args ...interface{}) interface{} {
-	return readContract(t, ctx, &system.StakingContract, method, args...)
+	return readContract(t, ctx, system.ValidatorsContract, method, args...)
 }
 
-func readContract(t *testing.T, ctx *CallContext, contract *common.Address, method string, args ...interface{}) interface{} {
+func readContract(t *testing.T, ctx *CallContext, contract common.Address, method string, args ...interface{}) interface{} {
 	abi, err := abi.JSON(strings.NewReader(testAbi))
 	// execute contract
 	data, err := abi.Pack(method, args...)

@@ -248,9 +248,7 @@ func (c *Democracy) executeDoubleSignPunish(chain consensus.ChainHeaderReader, h
 	if c.signTxFn == nil {
 		return nil, nil, errors.New("signTxFn not set")
 	}
-	contractName := system.PunishContractName
-	version := system.GetContractVersion(contractName, header.Number, c.chainConfig)
-	contract := system.GetContractAddress(contractName, version)
+	contract := system.GetContractAddressByConfig(system.PunishContractName, header.Number, c.chainConfig)
 	p.PunishAddr = contract
 	p.Plaintiff = c.validator
 	signer, err := p.RecoverSigner()
@@ -344,9 +342,7 @@ func (c *Democracy) executeDoubleSignPunishMsg(chain consensus.ChainHeaderReader
 	}
 	// build data
 	data := buildDoubleSignPunishExecutedEventData(p)
-	contractName := system.PunishContractName
-	version := system.GetContractVersion(contractName, header.Number, c.chainConfig)
-	contract := system.GetContractAddress(contractName, version)
+	contract := system.GetContractAddressByConfig(system.PunishContractName, header.Number, c.chainConfig)
 	pLog := &types.Log{
 		Address:     contract,
 		Topics:      topics,

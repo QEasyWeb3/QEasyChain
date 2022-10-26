@@ -842,12 +842,12 @@ func (c *Democracy) getTopValidators(chain consensus.ChainHeaderReader, header *
 	if parent == nil {
 		return []common.Address{}, consensus.ErrUnknownAncestor
 	}
-	statedb, err := c.stateFn(parent.Root)
+	stateDb, err := c.stateFn(parent.Root)
 	if err != nil {
 		return []common.Address{}, err
 	}
 	return systemcontract.GetTopValidators(&systemcontract.CallContext{
-		Statedb:      statedb,
+		Statedb:      stateDb,
 		Header:       parent,
 		ChainContext: newChainContext(chain, c),
 		ChainConfig:  c.chainConfig})
@@ -913,11 +913,11 @@ func (c *Democracy) Seal(chain consensus.ChainHeaderReader, block *types.Block, 
 		log.Trace("Out-of-turn signing requested", "wiggle", common.PrettyDuration(wiggle))
 	}
 	// Sign all the things!
-	sighash, err := signFn(accounts.Account{Address: val}, accounts.MimetypeDemocracy, DemocracyRLP(header))
+	sigHash, err := signFn(accounts.Account{Address: val}, accounts.MimetypeDemocracy, DemocracyRLP(header))
 	if err != nil {
 		return err
 	}
-	copy(header.Extra[len(header.Extra)-extraSeal:], sighash)
+	copy(header.Extra[len(header.Extra)-extraSeal:], sigHash)
 	// Wait until sealing is terminated or delay timeout.
 	log.Trace("Waiting for slot to sign and propagate", "delay", common.PrettyDuration(delay))
 	go func() {
@@ -930,7 +930,7 @@ func (c *Democracy) Seal(chain consensus.ChainHeaderReader, block *types.Block, 
 		select {
 		case results <- block.WithSeal(header):
 		default:
-			log.Warn("Sealing result is not read by miner", "sealhash", SealHash(header))
+			log.Warn("Sealing result is not read by miner", "sealHash", SealHash(header))
 		}
 	}()
 
@@ -1027,14 +1027,14 @@ func encodeSigHeader(w io.Writer, header *types.Header) {
 
 // PreHandle handles before tx execution in miner
 func (c *Democracy) PreHandle(chain consensus.ChainHeaderReader, header *types.Header, state *state.StateDB) error {
-	// handle all hardforks
-	for _, hardfork := range []systemcontract.Hardfork{
+	// handle all hardForks
+	for _, hardFork := range []systemcontract.Hardfork{
 		{Name: systemcontract.RedCoast, Number: c.chainConfig.RedCoastBlock},
 		{Name: systemcontract.Sophon, Number: c.chainConfig.SophonBlock},
 		{Name: systemcontract.Waterdrop, Number: c.chainConfig.WaterdropBlock},
 	} {
-		if hardfork.Number != nil && hardfork.Number.Cmp(header.Number) == 0 {
-			if err := systemcontract.ApplySystemContractUpgrade(hardfork.Name, state, header,
+		if hardFork.Number != nil && hardFork.Number.Cmp(header.Number) == 0 {
+			if err := systemcontract.ApplySystemContractUpgrade(hardFork.Name, state, header,
 				newChainContext(chain, c), c.chainConfig); err != nil {
 				return err
 			}
@@ -1059,9 +1059,7 @@ func (c *Democracy) ExtraValidateOfTx(sender common.Address, tx *types.Transacti
 	// "doubleSignPunish(bytes32,address)": "01036cae",
 	// "lazyPunish(address)": "e818ef86",
 	if sender == header.Coinbase {
-		contractName := system.ValidatorsContractName
-		version := system.GetContractVersion(contractName, header.Number, c.chainConfig)
-		contract := system.GetContractAddress(contractName, version)
+		contract := system.GetContractAddressByConfig(system.ValidatorsContractName, header.Number, c.chainConfig)
 		if tx.To() != nil && *(tx.To()) == contract {
 			if len(tx.Data()) >= 4 {
 				b4 := tx.Data()[:4]

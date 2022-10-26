@@ -36,11 +36,8 @@ type Proposal struct {
 
 // GetTopValidators return the result of calling method `getTopValidators` in Staking contract
 func GetTopValidators(ctx *CallContext) ([]common.Address, error) {
-	contractName := system.ValidatorsContractName
-	version := system.GetContractVersion(contractName, ctx.Header.Number, ctx.ChainConfig)
-
 	const method = "getTopValidators"
-	result, err := contractRead(ctx, contractName, version, method)
+	result, err := contractRead(ctx, system.ValidatorsContractName, method)
 	if err != nil {
 		log.Error("GetTopValidators contractRead failed", "err", err)
 		return []common.Address{}, err
@@ -55,11 +52,8 @@ func GetTopValidators(ctx *CallContext) ([]common.Address, error) {
 
 // UpdateActiveValidatorSet return the result of calling method `updateActiveValidatorSet` in Staking contract
 func UpdateActiveValidatorSet(ctx *CallContext, newValidators []common.Address) error {
-	contractName := system.ValidatorsContractName
-	version := system.GetContractVersion(contractName, ctx.Header.Number, ctx.ChainConfig)
-
 	const method = "updateActiveValidatorSet"
-	err := contractWrite(ctx, contractName, version, method, newValidators, new(big.Int).SetUint64(ctx.ChainConfig.Democracy.Epoch))
+	err := contractWrite(ctx, system.ValidatorsContractName, method, newValidators, new(big.Int).SetUint64(ctx.ChainConfig.Congress.Epoch))
 	if err != nil {
 		log.Error("UpdateActiveValidatorSet failed", "newValidators", newValidators, "err", err)
 	}
@@ -68,11 +62,8 @@ func UpdateActiveValidatorSet(ctx *CallContext, newValidators []common.Address) 
 
 // DecreaseMissedBlocksCounter return the result of calling method `decreaseMissedBlocksCounter` in Staking contract
 func DecreaseMissedBlocksCounter(ctx *CallContext) error {
-	contractName := system.PunishContractName
-	version := system.GetContractVersion(contractName, ctx.Header.Number, ctx.ChainConfig)
-
 	const method = "decreaseMissedBlocksCounter"
-	err := contractWrite(ctx, contractName, version, method, new(big.Int).SetUint64(ctx.ChainConfig.Democracy.Epoch))
+	err := contractWrite(ctx, system.PunishContractName, method, new(big.Int).SetUint64(ctx.ChainConfig.Congress.Epoch))
 	if err != nil {
 		log.Error("DecreaseMissedBlocksCounter failed", "err", err)
 	}
@@ -82,16 +73,13 @@ func DecreaseMissedBlocksCounter(ctx *CallContext) error {
 // DistributeBlockReward return the result of calling method `distributeBlockReward` in Staking contract
 func DistributeBlockReward(ctx *CallContext, fee *big.Int) error {
 	contractName := system.ValidatorsContractName
-	version := system.GetContractVersion(contractName, ctx.Header.Number, ctx.ChainConfig)
-	contract := system.GetContractAddress(contractName, version)
-
 	const method = "distributeBlockReward"
-	data, err := system.ABIPack(contractName, version, method)
+	data, err := system.ABIPack(contractName, ctx.GetContractVersion(contractName), method)
 	if err != nil {
 		log.Error("Can't pack data for distributeBlockReward", "error", err)
 		return err
 	}
-	if _, err := CallContractWithValue(ctx, ctx.Header.Coinbase, &contract, data, fee); err != nil {
+	if _, err := CallContractWithValue(ctx, ctx.Header.Coinbase, ctx.GetContractAddress(contractName), data, fee); err != nil {
 		log.Error("distributeBlockReward failed", "fee", fee, "err", err)
 		return err
 	}
@@ -100,11 +88,8 @@ func DistributeBlockReward(ctx *CallContext, fee *big.Int) error {
 
 // LazyPunish return the result of calling method `lazyPunish` in Staking contract
 func LazyPunish(ctx *CallContext, validator common.Address) error {
-	contractName := system.PunishContractName
-	version := system.GetContractVersion(contractName, ctx.Header.Number, ctx.ChainConfig)
-
 	const method = "punish"
-	err := contractWrite(ctx, contractName, version, method, validator)
+	err := contractWrite(ctx, system.PunishContractName, method, validator)
 	if err != nil {
 		log.Error("LazyPunish failed", "validator", validator, "err", err)
 	}
@@ -113,11 +98,8 @@ func LazyPunish(ctx *CallContext, validator common.Address) error {
 
 // DoubleSignPunish return the result of calling method `doubleSignPunish` in Staking contract
 func DoubleSignPunish(ctx *CallContext, punishHash common.Hash, validator common.Address) error {
-	contractName := system.PunishContractName
-	version := system.GetContractVersion(contractName, ctx.Header.Number, ctx.ChainConfig)
-
 	const method = "doubleSignPunish"
-	err := contractWrite(ctx, contractName, version, method, punishHash, validator)
+	err := contractWrite(ctx, system.PunishContractName, method, punishHash, validator)
 	if err != nil {
 		log.Error("DoubleSignPunish failed", "punishHash", punishHash, "validator", validator, "err", err)
 	}
@@ -136,7 +118,7 @@ func DoubleSignPunishWithGivenEVM(evm *vm.EVM, from common.Address, punishHash c
 		log.Error("Can't pack data for doubleSignPunish", "error", err)
 		return err
 	}
-	if _, err := VMCallContract(evm, from, &contract, data, math.MaxUint64); err != nil {
+	if _, err := VMCallContract(evm, from, contract, data, math.MaxUint64); err != nil {
 		log.Error("DoubleSignPunishWithGivenEVM failed", "punishHash", punishHash, "validator", validator, "err", err)
 		return err
 	}
@@ -145,11 +127,8 @@ func DoubleSignPunishWithGivenEVM(evm *vm.EVM, from common.Address, punishHash c
 
 // IsDoubleSignPunished return the result of calling method `isDoubleSignPunished` in Staking contract
 func IsDoubleSignPunished(ctx *CallContext, punishHash common.Hash) (bool, error) {
-	contractName := system.PunishContractName
-	version := system.GetContractVersion(contractName, ctx.Header.Number, ctx.ChainConfig)
-
 	const method = "isDoubleSignPunished"
-	result, err := contractRead(ctx, contractName, version, method, punishHash)
+	result, err := contractRead(ctx, system.PunishContractName, method, punishHash)
 	if err != nil {
 		log.Error("IsDoubleSignPunished contractRead failed", "punishHash", punishHash, "err", err)
 		return true, err
@@ -163,11 +142,8 @@ func IsDoubleSignPunished(ctx *CallContext, punishHash common.Hash) (bool, error
 
 // GetBlacksFrom return the access tx-from list
 func GetBlacksFrom(ctx *CallContext) ([]common.Address, error) {
-	contractName := system.AddressListContractName
-	version := system.GetContractVersion(contractName, ctx.Header.Number, ctx.ChainConfig)
-
 	const method = "getBlacksFrom"
-	result, err := contractRead(ctx, contractName, version, method)
+	result, err := contractRead(ctx, system.AddressListContractName, method)
 	if err != nil {
 		log.Error("GetBlacksFrom contractRead failed", "err", err)
 		return []common.Address{}, err
@@ -181,11 +157,8 @@ func GetBlacksFrom(ctx *CallContext) ([]common.Address, error) {
 
 // GetBlacksTo return access tx-to list
 func GetBlacksTo(ctx *CallContext) ([]common.Address, error) {
-	contractName := system.AddressListContractName
-	version := system.GetContractVersion(contractName, ctx.Header.Number, ctx.ChainConfig)
-
 	const method = "getBlacksTo"
-	result, err := contractRead(ctx, contractName, version, method)
+	result, err := contractRead(ctx, system.AddressListContractName, method)
 	if err != nil {
 		log.Error("GetBlacksTo contractRead failed", "err", err)
 		return []common.Address{}, err
@@ -199,11 +172,8 @@ func GetBlacksTo(ctx *CallContext) ([]common.Address, error) {
 
 // GetRuleByIndex return event log rules
 func GetRuleByIndex(ctx *CallContext, idx uint32) (common.Hash, int, common.AddressCheckType, error) {
-	contractName := system.AddressListContractName
-	version := system.GetContractVersion(contractName, ctx.Header.Number, ctx.ChainConfig)
-
 	const method = "getRuleByIndex"
-	results, err := contractReadAll(ctx, contractName, version, method, idx)
+	results, err := contractReadAll(ctx, system.AddressListContractName, method, idx)
 	if err != nil {
 		log.Error("GetRuleByIndex contractRead failed", "err", err)
 		return common.Hash{}, 0, common.CheckNone, err
@@ -231,11 +201,8 @@ func GetRuleByIndex(ctx *CallContext, idx uint32) (common.Hash, int, common.Addr
 
 // GetRulesLen return event log rules length
 func GetRulesLen(ctx *CallContext) (uint32, error) {
-	contractName := system.AddressListContractName
-	version := system.GetContractVersion(contractName, ctx.Header.Number, ctx.ChainConfig)
-
 	const method = "rulesLen"
-	result, err := contractRead(ctx, contractName, version, method)
+	result, err := contractRead(ctx, system.AddressListContractName, method)
 	if err != nil {
 		log.Error("GetRulesLen contractRead failed", "err", err)
 		return 0, err
@@ -259,8 +226,7 @@ func GetRulesLen(ctx *CallContext) (uint32, error) {
 // `pendingAdmin` stores at slot 1, and the position for `devs` is 2.
 func IsDeveloperVerificationEnabled(state consensus.StateReader, height *big.Int, config *params.ChainConfig) bool {
 	contractName := system.AddressListContractName
-	version := system.GetContractVersion(contractName, height, config)
-	contract := system.GetContractAddress(contractName, version)
+	contract := system.GetContractAddressByConfig(contractName, height, config)
 	compactValue := state.GetState(contract, common.Hash{})
 	// Layout of slot 0:
 	// [0   -    9][10-29][  30   ][    31     ]
@@ -272,8 +238,7 @@ func IsDeveloperVerificationEnabled(state consensus.StateReader, height *big.Int
 // LastBlackUpdatedNumber returns LastBlackUpdatedNumber of address list
 func LastBlackUpdatedNumber(state consensus.StateReader, height *big.Int, config *params.ChainConfig) uint64 {
 	contractName := system.AddressListContractName
-	version := system.GetContractVersion(contractName, height, config)
-	contract := system.GetContractAddress(contractName, version)
+	contract := system.GetContractAddressByConfig(contractName, height, config)
 	value := state.GetState(contract, system.BlackLastUpdatedNumberPosition)
 	return value.Big().Uint64()
 }
@@ -281,19 +246,15 @@ func LastBlackUpdatedNumber(state consensus.StateReader, height *big.Int, config
 // LastRulesUpdatedNumber returns LastRulesUpdatedNumber of address list
 func LastRulesUpdatedNumber(state consensus.StateReader, height *big.Int, config *params.ChainConfig) uint64 {
 	contractName := system.AddressListContractName
-	version := system.GetContractVersion(contractName, height, config)
-	contract := system.GetContractAddress(contractName, version)
+	contract := system.GetContractAddressByConfig(contractName, height, config)
 	value := state.GetState(contract, system.RulesLastUpdatedNumberPosition)
 	return value.Big().Uint64()
 }
 
 // GetPassedProposalCount returns passed proposal count
 func GetPassedProposalCount(ctx *CallContext) (uint32, error) {
-	contractName := system.SysGovContractName
-	version := system.GetContractVersion(contractName, ctx.Header.Number, ctx.ChainConfig)
-
 	const method = "getPassedProposalCount"
-	result, err := contractRead(ctx, contractName, version, method)
+	result, err := contractRead(ctx, system.SysGovContractName, method)
 	if err != nil {
 		log.Error("GetPassedProposalCount contractRead failed", "err", err)
 		return 0, err
@@ -308,12 +269,9 @@ func GetPassedProposalCount(ctx *CallContext) (uint32, error) {
 // GetPassedProposalByIndex returns passed proposal by index
 func GetPassedProposalByIndex(ctx *CallContext, idx uint32) (*Proposal, error) {
 	contractName := system.SysGovContractName
-	version := system.GetContractVersion(contractName, ctx.Header.Number, ctx.ChainConfig)
-	contract := system.GetContractAddress(contractName, version)
-
 	const method = "getPassedProposalByIndex"
-	abi := system.ABI(contractName, version)
-	result, err := contractReadBytes(ctx, contract, &abi, method, idx)
+	abi := system.ABI(contractName, ctx.GetContractVersion(contractName))
+	result, err := contractReadBytes(ctx, ctx.GetContractAddress(contractName), &abi, method, idx)
 	if err != nil {
 		log.Error("GetPassedProposalByIndex contractReadBytes failed", "idx", idx, "err", err)
 		return nil, err
@@ -329,11 +287,8 @@ func GetPassedProposalByIndex(ctx *CallContext, idx uint32) (*Proposal, error) {
 
 // FinishProposalById finish passed proposal by id
 func FinishProposalById(ctx *CallContext, id *big.Int) error {
-	contractName := system.SysGovContractName
-	version := system.GetContractVersion(contractName, ctx.Header.Number, ctx.ChainConfig)
-
 	const method = "finishProposalById"
-	err := contractWrite(ctx, contractName, version, method, id)
+	err := contractWrite(ctx, system.SysGovContractName, method, id)
 	if err != nil {
 		log.Error("FinishProposalById failed", "id", id, "err", err)
 	}
@@ -342,7 +297,7 @@ func FinishProposalById(ctx *CallContext, id *big.Int) error {
 
 // ExecuteProposal executes proposal
 func ExecuteProposal(ctx *CallContext, prop *Proposal) error {
-	_, err := CallContractWithValue(ctx, prop.From, &prop.To, prop.Data, prop.Value)
+	_, err := CallContractWithValue(ctx, prop.From, prop.To, prop.Data, prop.Value)
 	if err != nil {
 		log.Error("ExecuteProposal failed", "proposal", prop, "err", err)
 	}
@@ -351,15 +306,15 @@ func ExecuteProposal(ctx *CallContext, prop *Proposal) error {
 
 // ExecuteProposalWithGivenEVM executes proposal by given evm
 func ExecuteProposalWithGivenEVM(evm *vm.EVM, prop *Proposal, gas uint64) (ret []byte, err error) {
-	if ret, err = VMCallContract(evm, prop.From, &prop.To, prop.Data, gas); err != nil {
+	if ret, err = VMCallContract(evm, prop.From, prop.To, prop.Data, gas); err != nil {
 		log.Error("ExecuteProposalWithGivenEVM failed", "proposal", prop, "err", err)
 	}
 	return
 }
 
 // contractRead perform contract read
-func contractRead(ctx *CallContext, contractName string, version uint8, method string, args ...interface{}) (interface{}, error) {
-	ret, err := contractReadAll(ctx, contractName, version, method, args...)
+func contractRead(ctx *CallContext, contractName string, method string, args ...interface{}) (interface{}, error) {
+	ret, err := contractReadAll(ctx, contractName, method, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -370,10 +325,9 @@ func contractRead(ctx *CallContext, contractName string, version uint8, method s
 }
 
 // contractReadAll perform contract Read and return all results
-func contractReadAll(ctx *CallContext, contractName string, version uint8, method string, args ...interface{}) ([]interface{}, error) {
-	abi := system.ABI(contractName, version)
-	contract := system.GetContractAddress(contractName, version)
-	result, err := contractReadBytes(ctx, contract, &abi, method, args...)
+func contractReadAll(ctx *CallContext, contractName string, method string, args ...interface{}) ([]interface{}, error) {
+	abi := system.ABI(contractName, ctx.GetContractVersion(contractName))
+	result, err := contractReadBytes(ctx, ctx.GetContractAddress(contractName), &abi, method, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -392,7 +346,7 @@ func contractReadBytes(ctx *CallContext, contract common.Address, abi *abi.ABI, 
 		log.Error("Can't pack data", "method", method, "error", err)
 		return nil, err
 	}
-	result, err := CallContract(ctx, &contract, data)
+	result, err := CallContract(ctx, contract, data)
 	if err != nil {
 		log.Error("Failed to execute", "method", method, "err", err)
 		return nil, err
@@ -401,14 +355,13 @@ func contractReadBytes(ctx *CallContext, contract common.Address, abi *abi.ABI, 
 }
 
 // contractWrite perform write contract
-func contractWrite(ctx *CallContext, contractName string, version uint8, method string, args ...interface{}) error {
-	data, err := system.ABIPack(contractName, version, method, args...)
+func contractWrite(ctx *CallContext, contractName string, method string, args ...interface{}) error {
+	data, err := system.ABIPack(contractName, ctx.GetContractVersion(contractName), method, args...)
 	if err != nil {
 		log.Error("Can't pack data", "method", method, "error", err)
 		return err
 	}
-	contract := system.GetContractAddress(contractName, version)
-	if _, err := CallContract(ctx, &contract, data); err != nil {
+	if _, err := CallContract(ctx, ctx.GetContractAddress(contractName), data); err != nil {
 		log.Error("Failed to execute", "method", method, "err", err)
 		return err
 	}

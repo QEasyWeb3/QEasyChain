@@ -91,9 +91,7 @@ func (c *Democracy) CanCreate(state consensus.StateReader, addr common.Address, 
 		devVerifyEnabled := systemcontract.IsDeveloperVerificationEnabled(state, height, c.chainConfig)
 		if devVerifyEnabled {
 			slot := calcSlotOfDevMappingKey(addr)
-			contractName := system.AddressListContractName
-			version := system.GetContractVersion(contractName, height, c.chainConfig)
-			contract := system.GetContractAddress(contractName, version)
+			contract := system.GetContractAddressByConfig(system.AddressListContractName, height, c.chainConfig)
 			valueHash := state.GetState(contract, slot)
 			// none zero value means true
 			return valueHash.Big().Sign() > 0
