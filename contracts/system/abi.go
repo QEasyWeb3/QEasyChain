@@ -14,58 +14,58 @@ const (
 	// ValidatorsInteractiveABI contains all methods to interactive with validator contracts.
 	ValidatorsInteractiveABI = `
     [
+    {
+        "inputs": [
         {
-            "inputs": [
-            {
-                "internalType": "address[]",
-                "name": "vals",
-                "type": "address[]"
-            }
-            ],
-            "name": "initialize",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
+            "internalType": "address[]",
+            "name": "vals",
+            "type": "address[]"
+        }
+        ],
+        "name": "initialize",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "distributeBlockReward",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "getTopValidators",
+        "outputs": [
+        {
+            "internalType": "address[]",
+            "name": "",
+            "type": "address[]"
+        }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+        {
+            "internalType": "address[]",
+            "name": "newSet",
+            "type": "address[]"
         },
         {
-            "inputs": [],
-            "name": "distributeBlockReward",
-            "outputs": [],
-            "stateMutability": "payable",
-            "type": "function"
-        },
-        {
-            "inputs": [],
-            "name": "getTopValidators",
-            "outputs": [
-            {
-                "internalType": "address[]",
-                "name": "",
-                "type": "address[]"
-            }
-            ],
-            "stateMutability": "view",
-            "type": "function"
-        },
-        {
-            "inputs": [
-            {
-                "internalType": "address[]",
-                "name": "newSet",
-                "type": "address[]"
-            },
-            {
-                "internalType": "uint256",
-                "name": "epoch",
-                "type": "uint256"
-            }
-            ],
-            "name": "updateActiveValidatorSet",
-            "outputs": [],
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
+            "internalType": "uint256",
+            "name": "epoch",
+            "type": "uint256"
+        }
+        ],
+        "name": "updateActiveValidatorSet",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
         "inputs": [
             {
             "internalType": "address",
@@ -113,8 +113,8 @@ const (
         ],
         "stateMutability": "view",
         "type": "function"
-        }
-    ]
+    }
+]
     `
 
 	PunishInteractiveABI = `
@@ -495,243 +495,6 @@ const (
 
 	PunishV1InteractiveABI = `[
     {
-      "anonymous": false,
-      "inputs": [],
-      "name": "LogDecreaseMissedBlocksCounter",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "val",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "time",
-          "type": "uint256"
-        }
-      ],
-      "name": "LogDoubleSignPunishValidator",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "val",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "time",
-          "type": "uint256"
-        }
-      ],
-      "name": "LogPunishValidator",
-      "type": "event"
-    },
-    {
-      "inputs": [],
-      "name": "JailPeriod",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "MarginLockPeriod",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "MaxValidators",
-      "outputs": [
-        {
-          "internalType": "uint16",
-          "name": "",
-          "type": "uint16"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "PercentChangeLockPeriod",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "PoaMinMargin",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "PosMinMargin",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "PunishAmount",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "WithdrawLockPeriod",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_val",
-          "type": "address"
-        }
-      ],
-      "name": "cleanPunishRecord",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_epoch",
-          "type": "uint256"
-        }
-      ],
-      "name": "decreaseMissedBlocksCounter",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "decreaseRate",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bytes32",
-          "name": "punishHash",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "address",
-          "name": "val",
-          "type": "address"
-        }
-      ],
-      "name": "doubleSignPunish",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "val",
-          "type": "address"
-        }
-      ],
-      "name": "getPunishRecord",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "getPunishValidatorsLen",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "inputs": [],
       "name": "initialize",
       "outputs": [],
@@ -739,483 +502,67 @@ const (
       "type": "function"
     },
     {
-      "inputs": [],
-      "name": "initialized",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "_val",
+            "type": "address"
+          }
+        ],
+        "name": "punish",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
     },
     {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_val",
-          "type": "address"
-        }
-      ],
-      "name": "punish",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "_epoch",
+            "type": "uint256"
+          }
+        ],
+        "name": "decreaseMissedBlocksCounter",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
     },
     {
-      "inputs": [],
-      "name": "punishContract",
-      "outputs": [
-        {
-          "internalType": "contract IPunish",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
+        "inputs": [
+          {
+            "internalType": "bytes32",
+            "name": "punishHash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "address",
+            "name": "val",
+            "type": "address"
+          }
+        ],
+        "name": "doubleSignPunish",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
     },
     {
-      "inputs": [],
-      "name": "punishThreshold",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "punishValidators",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "removeThreshold",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "validatorsContract",
-      "outputs": [
-        {
-          "internalType": "contract IValidators",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    }
-  ]`
-
-	PunishV2InteractiveABI = `[
-    {
-      "anonymous": false,
-      "inputs": [],
-      "name": "LogDecreaseMissedBlocksCounter",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "val",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "time",
-          "type": "uint256"
-        }
-      ],
-      "name": "LogDoubleSignPunishValidator",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "val",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "time",
-          "type": "uint256"
-        }
-      ],
-      "name": "LogPunishValidator",
-      "type": "event"
-    },
-    {
-      "inputs": [],
-      "name": "JailPeriod",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "MarginLockPeriod",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "MaxValidators",
-      "outputs": [
-        {
-          "internalType": "uint16",
-          "name": "",
-          "type": "uint16"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "PercentChangeLockPeriod",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "PoaMinMargin",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "PosMinMargin",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "PunishAmount",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "WithdrawLockPeriod",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_val",
-          "type": "address"
-        }
-      ],
-      "name": "cleanPunishRecord",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_epoch",
-          "type": "uint256"
-        }
-      ],
-      "name": "decreaseMissedBlocksCounter",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "decreaseRate",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bytes32",
-          "name": "punishHash",
-          "type": "bytes32"
-        },
-        {
-          "internalType": "address",
-          "name": "val",
-          "type": "address"
-        }
-      ],
-      "name": "doubleSignPunish",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bytes32",
-          "name": "",
-          "type": "bytes32"
-        }
-      ],
-      "name": "doubleSignPunished",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "val",
-          "type": "address"
-        }
-      ],
-      "name": "getPunishRecord",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "getPunishValidatorsLen",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "initialize",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "initialized",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "bytes32",
-          "name": "punishHash",
-          "type": "bytes32"
-        }
-      ],
-      "name": "isDoubleSignPunished",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "_val",
-          "type": "address"
-        }
-      ],
-      "name": "punish",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "punishContract",
-      "outputs": [
-        {
-          "internalType": "contract IPunish",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "punishThreshold",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "punishValidators",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "removeThreshold",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "validatorsContract",
-      "outputs": [
-        {
-          "internalType": "contract IValidators",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
+        "inputs": [
+          {
+            "internalType": "bytes32",
+            "name": "punishHash",
+            "type": "bytes32"
+          }
+        ],
+        "name": "isDoubleSignPunished",
+        "outputs": [
+          {
+            "internalType": "bool",
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
     }
   ]`
 )
@@ -1314,10 +661,6 @@ func init() {
 				abi:  ValidatorsV1InteractiveABI,
 				addr: ValidatorsV1Contract,
 			},
-			ContractV2: {
-				abi:  ValidatorsV1InteractiveABI,
-				addr: ValidatorsV1Contract,
-			},
 		},
 		PunishContractName: {
 			ContractV0: {
@@ -1325,11 +668,11 @@ func init() {
 				addr: PunishContract,
 			},
 			ContractV1: {
-				abi:  PunishV1InteractiveABI,
+				abi:  PunishInteractiveABI,
 				addr: PunishV1Contract,
 			},
 			ContractV2: {
-				abi:  PunishV2InteractiveABI,
+				abi:  PunishV1InteractiveABI,
 				addr: PunishV1Contract,
 			},
 		},
@@ -1347,10 +690,6 @@ func init() {
 		},
 		AddressListContractName: {
 			ContractV0: {
-				abi:  AddrListInteractiveABI,
-				addr: AddressListContract,
-			},
-			ContractV1: {
 				abi:  AddrListInteractiveABI,
 				addr: AddressListContract,
 			},
@@ -1404,9 +743,7 @@ func GetContractVersion(contractName string, blockNum *big.Int, config *params.C
 	switch contractName {
 	case ValidatorsContractName:
 		{
-			if sysContractVersion >= SophonVersion {
-				return ContractV2
-			} else if sysContractVersion >= RedCoastVersion {
+			if sysContractVersion >= RedCoastVersion {
 				return ContractV1
 			}
 			return ContractV0
@@ -1433,9 +770,7 @@ func GetContractVersion(contractName string, blockNum *big.Int, config *params.C
 		}
 	case AddressListContractName:
 		{
-			if sysContractVersion >= SophonVersion {
-				return ContractV1
-			} else if sysContractVersion >= RedCoastVersion {
+			if sysContractVersion >= RedCoastVersion {
 				return ContractV0
 			}
 			break
@@ -1451,4 +786,8 @@ func GetContractAddress(contractName string, version uint8) common.Address {
 		log.Crit("Unknown system address: ", "ContractName", contractName, "Version", version)
 	}
 	return addr
+}
+
+func GetContractAddressByConfig(contractName string, blockNum *big.Int, config *params.ChainConfig) common.Address {
+	return GetContractAddress(contractName, GetContractVersion(contractName, blockNum, config))
 }
