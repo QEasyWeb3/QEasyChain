@@ -595,11 +595,13 @@ const (
 const DevMappingPosition = 2
 
 const (
-	ValidatorsContractName  = "ValidatorsContract"
-	PunishContractName      = "PunishContract"
-	ProposalContractName    = "ProposalContract"
-	SysGovContractName      = "SysGovContract"
-	AddressListContractName = "AddressListContract"
+	SystemContractName        = "SystemContract"
+	ValidatorsContractName    = "ValidatorsContract"
+	PunishContractName        = "PunishContract"
+	ProposalContractName      = "ProposalContract"
+	SysGovContractName        = "SysGovContract"
+	AddressListContractName   = "AddressListContract"
+	CommunityPoolContractName = "CommunityPoolContract"
 )
 
 const (
@@ -630,13 +632,21 @@ var (
 )
 
 var (
-	ValidatorsContract   = common.HexToAddress("0x000000000000000000000000000000000000f000")
-	PunishContract       = common.HexToAddress("0x000000000000000000000000000000000000f001")
-	ProposalContract     = common.HexToAddress("0x000000000000000000000000000000000000f002")
-	SysGovContract       = common.HexToAddress("0x000000000000000000000000000000000000F003")
-	AddressListContract  = common.HexToAddress("0x000000000000000000000000000000000000F004")
-	ValidatorsV1Contract = common.HexToAddress("0x000000000000000000000000000000000000F005")
-	PunishV1Contract     = common.HexToAddress("0x000000000000000000000000000000000000F006")
+	MaxValidators        = 21
+	MinSelfStake         = big.NewInt(100)
+	ShareOutBonusPercent = 10
+)
+
+var (
+	SystemContract        = common.HexToAddress("0x000000000000000000000000000000000000F000")
+	ValidatorsContract    = common.HexToAddress("0x000000000000000000000000000000000000F000")
+	CommunityPoolContract = common.HexToAddress("0x000000000000000000000000000000000000F001")
+	PunishContract        = common.HexToAddress("0x000000000000000000000000000000000000f001")
+	ProposalContract      = common.HexToAddress("0x000000000000000000000000000000000000f002")
+	SysGovContract        = common.HexToAddress("0x000000000000000000000000000000000000F003")
+	AddressListContract   = common.HexToAddress("0x000000000000000000000000000000000000F004")
+	ValidatorsV1Contract  = common.HexToAddress("0x000000000000000000000000000000000000F005")
+	PunishV1Contract      = common.HexToAddress("0x000000000000000000000000000000000000F006")
 
 	addrMap map[string]map[uint8]common.Address // ContractName->version->address
 	abiMap  map[string]map[uint8]abi.ABI        // ContractName->version->abi

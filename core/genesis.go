@@ -22,6 +22,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/contracts/system"
 	"math/big"
 	"strings"
 
@@ -41,6 +42,8 @@ import (
 
 //go:generate gencodec -type Genesis -field-override genesisSpecMarshaling -out gen_genesis.go
 //go:generate gencodec -type GenesisAccount -field-override genesisAccountMarshaling -out gen_genesis_account.go
+//go:generate gencodec -type Init -field-override initMarshaling -out gen_genesis_init.go
+//go:generate gencodec -type ValidatorInfo -field-override validatorInfoMarshaling -out gen_genesis_validator_info.go
 
 var errGenesisNoConfig = errors.New("genesis has no chain configuration")
 
@@ -56,6 +59,7 @@ type Genesis struct {
 	Mixhash    common.Hash         `json:"mixHash"`
 	Coinbase   common.Address      `json:"coinbase"`
 	Alloc      GenesisAlloc        `json:"alloc"      gencodec:"required"`
+	Validators []ValidatorInfo     `json:"validators"`
 
 	// These fields are used for consensus tests. Please don't use them
 	// in actual genesis blocks.
@@ -86,7 +90,42 @@ type GenesisAccount struct {
 	Storage    map[common.Hash]common.Hash `json:"storage,omitempty"`
 	Balance    *big.Int                    `json:"balance" gencodec:"required"`
 	Nonce      uint64                      `json:"nonce,omitempty"`
+	Init       *Init                       `json:"init,omitempty"`
 	PrivateKey []byte                      `json:"secretKey,omitempty"` // for tests
+}
+
+// Init represents the args of system contracts inital args
+type Init struct {
+	Admin common.Address `json:"admin,omitempty"`
+}
+
+// ValidatorInfo represents the info of inital validators
+type ValidatorInfo struct {
+	Address          common.Address `json:"address"         gencodec:"required"`
+	Manager          common.Address `json:"manager"         gencodec:"required"`
+	Rate             *big.Int       `json:"rate,omitempty"`
+	Stake            *big.Int       `json:"stake,omitempty"`
+	AcceptDelegation bool           `json:"acceptDelegation,omitempty"`
+}
+
+// makeValidator creates ValidatorInfo
+func makeValidator(address, manager, rate, stake string, acceptDelegation bool) ValidatorInfo {
+	rateNum, ok := new(big.Int).SetString(rate, 10)
+	if !ok {
+		panic("Failed to make validator info due to invalid rate")
+	}
+	stakeNum, ok := new(big.Int).SetString(stake, 10)
+	if !ok {
+		panic("Failed to make validator info due to invalid stake")
+	}
+
+	return ValidatorInfo{
+		Address:          common.HexToAddress(address),
+		Manager:          common.HexToAddress(manager),
+		Rate:             rateNum,
+		Stake:            stakeNum,
+		AcceptDelegation: acceptDelegation,
+	}
 }
 
 // field type overrides for gencodec
@@ -271,7 +310,6 @@ func (g *Genesis) ToBlock(db ethdb.Database) *types.Block {
 			statedb.SetState(addr, key, value)
 		}
 	}
-	root := statedb.IntermediateRoot(false)
 	head := &types.Header{
 		Number:     new(big.Int).SetUint64(g.Number),
 		Nonce:      types.EncodeNonce(g.Nonce),
@@ -284,7 +322,6 @@ func (g *Genesis) ToBlock(db ethdb.Database) *types.Block {
 		Difficulty: g.Difficulty,
 		MixDigest:  g.Mixhash,
 		Coinbase:   g.Coinbase,
-		Root:       root,
 	}
 	if g.GasLimit == 0 {
 		head.GasLimit = params.GenesisGasLimit
@@ -299,8 +336,31 @@ func (g *Genesis) ToBlock(db ethdb.Database) *types.Block {
 			head.BaseFee = new(big.Int).SetUint64(params.InitialBaseFee)
 		}
 	}
+
+	// Handle the Chaos related
+	if g.Config != nil && g.Config.Democracy != nil {
+		// init system contract
+		gInit := &genesisInit{statedb, head, g}
+		for name, initSystemContract := range map[string]func() error{
+			"Staking":       gInit.initStaking,
+			"CommunityPool": gInit.initCommunityPool,
+			"AddressList":   gInit.initAddressList,
+		} {
+			if err = initSystemContract(); err != nil {
+				log.Crit("Failed to init system contract", "contract", name, "err", err)
+			}
+		}
+		// Set validoter info
+		if head.Extra, err = gInit.initValidators(); err != nil {
+			log.Crit("Failed to init Validators", "err", err)
+		}
+	}
+
+	// Update root after execution
+	head.Root = statedb.IntermediateRoot(false)
+
 	statedb.Commit(false)
-	statedb.Database().TrieDB().Commit(root, true, nil)
+	statedb.Database().TrieDB().Commit(head.Root, true, nil)
 
 	return types.NewBlock(head, nil, nil, nil, trie.NewStackTrie(nil))
 }
@@ -318,10 +378,6 @@ func (g *Genesis) Commit(db ethdb.Database) (*types.Block, error) {
 	}
 	if err := config.CheckConfigForkOrder(); err != nil {
 		return nil, err
-	}
-	if config.WaterdropBlock != nil && config.WaterdropBlock.Uint64()%params.WaterdropContinousInturn != 0 {
-		return nil, fmt.Errorf("fork config error: waterdropBlock(%v) doesn't satisfy 'WaterdropBlock %% %v == 0'",
-			config.WaterdropBlock, params.WaterdropContinousInturn)
 	}
 	if config.Clique != nil && len(block.Extra()) == 0 {
 		return nil, errors.New("can't start clique chain without signers")
@@ -360,24 +416,34 @@ func GenesisBlockForTesting(db ethdb.Database, addr common.Address, balance *big
 func DefaultGenesisBlock() *Genesis {
 	return &Genesis{
 		Config:     params.MainnetChainConfig,
-		Nonce:      0,
-		Timestamp:  0x5fc58968,
-		ExtraData:  hexutil.MustDecode("0x0000000000000000000000000000000000000000000000000000000000000000fc20f6a8a1a65a91f838247b4f460437a5a68bca0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"),
-		GasLimit:   0x280de80,
+		Timestamp:  0x629d4380,
+		ExtraData:  hexutil.MustDecode("0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"),
+		GasLimit:   0x05f5e100,
 		Difficulty: big.NewInt(1),
+		Mixhash:    common.Hash{},
 		Alloc:      decodePrealloc(mainnetAllocData),
+		Validators: []ValidatorInfo{
+			makeValidator("0x0942737e33b1AD9B028bb4FAb46677B1e5371D79", "0x6BC0E9C6a939f8f6d3413091738665aD1D7d2776", "50", "10000", true),
+			makeValidator("0x7D63E9587ad75D73793a8384Dfc8f54ccdbE0CB", "0x6BC0E9C6a939f8f6d3413091738665aD1D7d2776", "50", "10000", true),
+			makeValidator("0xd502b3B6B5D11C8E174FC21F7A2A0C980fEff930", "0x6BC0E9C6a939f8f6d3413091738665aD1D7d2776", "50", "10000", true),
+		},
 	}
 }
 
 func DefaultTestnetGenesisBlock() *Genesis {
 	return &Genesis{
-		Config: params.TestnetChainConfig,
-		//Timestamp:  0x5fc58968,
-		ExtraData:  hexutil.MustDecode("0x00000000000000000000000000000000000000000000000000000000000000006301cdf018e8678067cf8f14ab99f6f2a906db44ba15350a03e67247704925fdec4f4f4ca844f45897205d7a7181d3918b27050c3be5e9dcbb6d21b257ba191a2ca47436e6444b6822f07fbdc613265db5f5493bcde2e1b179db904ed89ec5368e444d500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"),
-		GasLimit:   0x280de80,
+		Config:     params.TestnetChainConfig,
+		Timestamp:  0x6279c720,
+		ExtraData:  hexutil.MustDecode("0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"),
+		GasLimit:   0x05f5e100,
 		Difficulty: big.NewInt(1),
 		Alloc:      decodePrealloc(testnetAllocData),
 		Mixhash:    common.Hash{},
+		Validators: []ValidatorInfo{
+			makeValidator("0x0942737e33b1AD9B028bb4FAb46677B1e5371D79", "0x6BC0E9C6a939f8f6d3413091738665aD1D7d2776", "50", "10000", true),
+			makeValidator("0x7D63E9587ad75D73793a8384Dfc8f54ccdbE0CB", "0x6BC0E9C6a939f8f6d3413091738665aD1D7d2776", "50", "10000", true),
+			makeValidator("0xd502b3B6B5D11C8E174FC21F7A2A0C980fEff930", "0x6BC0E9C6a939f8f6d3413091738665aD1D7d2776", "50", "10000", true),
+		},
 	}
 }
 
@@ -396,22 +462,25 @@ func DefaultRopstenGenesisBlock() *Genesis {
 // BasicDemocracyGenesisBlock returns a genesis containing basic allocation for Democracy engine,
 func BasicDemocracyGenesisBlock(config *params.ChainConfig, initialValidators []common.Address, faucet common.Address) *Genesis {
 	extraVanity := 32
-	extraData := make([]byte, extraVanity+common.AddressLength*len(initialValidators)+65)
-	for i, validator := range initialValidators {
-		copy(extraData[extraVanity+i*common.AddressLength:], validator[:])
-	}
+	extraData := make([]byte, extraVanity+65)
 	alloc := decodePrealloc(basicAllocForDemocracy)
 	if (faucet != common.Address{}) {
 		// 100M
 		b, _ := new(big.Int).SetString("100000000000000000000000000", 10)
 		alloc[faucet] = GenesisAccount{Balance: b}
 	}
+	validators := make([]ValidatorInfo, 0, len(initialValidators))
+	for _, val := range initialValidators {
+		validators = append(validators, ValidatorInfo{val, faucet, big.NewInt(20), big.NewInt(50000), true})
+	}
+	alloc[system.SystemContract].Init.Admin = faucet
 	return &Genesis{
 		Config:     config,
 		ExtraData:  extraData,
 		GasLimit:   0x280de80,
 		Difficulty: big.NewInt(2),
 		Alloc:      alloc,
+		Validators: validators,
 	}
 }
 
@@ -447,17 +516,28 @@ func DeveloperGenesisBlock(period uint64, gasLimit uint64, faucet common.Address
 }
 
 func decodePrealloc(data string) GenesisAlloc {
+	type initArgs struct {
+		Admin *big.Int
+	}
 	var p []struct {
 		Addr    *big.Int
 		Balance *big.Int
 		Code    []byte
+		Init    *initArgs
 	}
+
 	if err := rlp.NewStream(strings.NewReader(data), 0).Decode(&p); err != nil {
 		panic(err)
 	}
 	ga := make(GenesisAlloc, len(p))
 	for _, account := range p {
-		ga[common.BigToAddress(account.Addr)] = GenesisAccount{Balance: account.Balance, Code: account.Code}
+		var init *Init
+		if account.Init != nil {
+			init = &Init{
+				Admin: common.BigToAddress(account.Init.Admin),
+			}
+		}
+		ga[common.BigToAddress(account.Addr)] = GenesisAccount{Balance: account.Balance, Code: account.Code, Init: init}
 	}
 	return ga
 }
