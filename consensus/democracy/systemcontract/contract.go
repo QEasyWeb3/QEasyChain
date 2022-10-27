@@ -51,7 +51,7 @@ func GetTopValidators(ctx *CallContext) ([]common.Address, error) {
 // UpdateActiveValidatorSet return the result of calling method `updateActiveValidatorSet` in Staking contract
 func UpdateActiveValidatorSet(ctx *CallContext, newValidators []common.Address) error {
 	const method = "updateActiveValidatorSet"
-	err := contractWrite(ctx, system.SysContractName, method, newValidators, new(big.Int).SetUint64(ctx.ChainConfig.Democracy.Epoch))
+	err := contractWrite(ctx, system.SysContractName, method, newValidators)
 	if err != nil {
 		log.Error("UpdateActiveValidatorSet failed", "newValidators", newValidators, "err", err)
 	}
@@ -61,7 +61,7 @@ func UpdateActiveValidatorSet(ctx *CallContext, newValidators []common.Address) 
 // DecreaseMissedBlocksCounter return the result of calling method `decreaseMissedBlocksCounter` in Staking contract
 func DecreaseMissedBlocksCounter(ctx *CallContext) error {
 	const method = "decreaseMissedBlocksCounter"
-	err := contractWrite(ctx, system.SysContractName, method, new(big.Int).SetUint64(ctx.ChainConfig.Democracy.Epoch))
+	err := contractWrite(ctx, system.SysContractName, method)
 	if err != nil {
 		log.Error("DecreaseMissedBlocksCounter failed", "err", err)
 	}
