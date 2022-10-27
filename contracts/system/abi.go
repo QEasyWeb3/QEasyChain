@@ -360,153 +360,88 @@ const (
 
 	AddrListInteractiveABI = `
     [
-        {
-        "inputs": [],
-        "name": "blackLastUpdatedNumber",
-        "outputs": [
-            {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-        },
-        {
-        "inputs": [],
-        "name": "devVerifyEnabled",
-        "outputs": [
-            {
-            "internalType": "bool",
-            "name": "",
-            "type": "bool"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-        },
-        {
-        "inputs": [],
-        "name": "getBlacksFrom",
-        "outputs": [
-            {
-            "internalType": "address[]",
-            "name": "",
-            "type": "address[]"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-        },
-        {
-        "inputs": [],
-        "name": "getBlacksTo",
-        "outputs": [
-            {
-            "internalType": "address[]",
-            "name": "",
-            "type": "address[]"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-        },
-        {
-        "inputs": [
-            {
-            "internalType": "uint32",
-            "name": "i",
-            "type": "uint32"
-            }
-        ],
-        "name": "getRuleByIndex",
-        "outputs": [
-            {
-            "internalType": "bytes32",
-            "name": "",
-            "type": "bytes32"
-            },
-            {
-            "internalType": "uint128",
-            "name": "",
-            "type": "uint128"
-            },
-            {
-            "internalType": "enum AddressList.CheckType",
-            "name": "",
-            "type": "uint8"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-        },
-        {
-        "inputs": [],
-        "name": "initialize",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-        },
-        {
-        "inputs": [
-            {
-            "internalType": "address",
-            "name": "_admin",
-            "type": "address"
-            }
-        ],
-        "name": "initialize",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-        },
-        {
-        "inputs": [
-            {
-            "internalType": "address",
-            "name": "addr",
-            "type": "address"
-            }
-        ],
-        "name": "isDeveloper",
-        "outputs": [
-            {
-            "internalType": "bool",
-            "name": "",
-            "type": "bool"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-        },
-        {
-        "inputs": [],
-        "name": "rulesLastUpdatedNumber",
-        "outputs": [
-            {
-            "internalType": "uint256",
-            "name": "",
-            "type": "uint256"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-        },
-        {
-        "inputs": [],
-        "name": "rulesLen",
-        "outputs": [
-            {
-            "internalType": "uint32",
-            "name": "",
-            "type": "uint32"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-        }
-    ]`
+		{
+			"inputs": [
+				{
+					"internalType": "address",
+					"name": "_admin",
+					"type": "address"
+				}
+			],
+			"name": "initialize",
+			"outputs": [],
+			"stateMutability": "nonpayable",
+			"type": "function"
+		},
+		{
+			"inputs": [],
+			"name": "getBlacksFrom",
+			"outputs": [
+				{
+					"internalType": "address[]",
+					"name": "",
+					"type": "address[]"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [],
+			"name": "getBlacksTo",
+			"outputs": [
+				{
+					"internalType": "address[]",
+					"name": "",
+					"type": "address[]"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [
+				{
+					"internalType": "uint32",
+					"name": "i",
+					"type": "uint32"
+				}
+			],
+			"name": "getRuleByIndex",
+			"outputs": [
+				{
+					"internalType": "bytes32",
+					"name": "",
+					"type": "bytes32"
+				},
+				{
+					"internalType": "uint128",
+					"name": "",
+					"type": "uint128"
+				},
+				{
+					"internalType": "enum AddressList.CheckType",
+					"name": "",
+					"type": "uint8"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		},
+		{
+			"inputs": [],
+			"name": "rulesLen",
+			"outputs": [
+				{
+					"internalType": "uint32",
+					"name": "",
+					"type": "uint32"
+				}
+			],
+			"stateMutability": "view",
+			"type": "function"
+		}
+	]`
 )
 
 // DevMappingPosition is the position of the state variable `devs`.
@@ -569,9 +504,10 @@ var (
 )
 
 var (
-	MaxValidators        = 21
+	MaxValidators        = uint8(21)
 	MinSelfStake         = big.NewInt(100)
-	ShareOutBonusPercent = 10
+	ShareOutBonusPercent = uint8(10)
+	LocalAddress         = common.HexToAddress("0x0000000000000000000000000000000000000000")
 )
 
 var (

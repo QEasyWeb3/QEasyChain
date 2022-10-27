@@ -34,7 +34,7 @@ func (ctx *CallContext) GetContractAddress(contractName string) common.Address {
 
 // CallContract executes transaction sent to system contracts.
 func CallContract(ctx *CallContext, to common.Address, data []byte) (ret []byte, err error) {
-	return CallContractWithValue(ctx, ctx.Header.Coinbase, to, data, big.NewInt(0))
+	return CallContractWithValue(ctx, system.LocalAddress, to, data, big.NewInt(0))
 }
 
 // CallContract executes transaction sent to system contracts.
