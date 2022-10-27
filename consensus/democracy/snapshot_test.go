@@ -41,7 +41,7 @@ func validatorAddress(index int64) common.Address {
 func genFields(waterdropFork *big.Int, block uint64) fields {
 	result := fields{config: &params.ChainConfig{WaterdropBlock: waterdropFork}, Number: block,
 		Validators: make(map[common.Address]struct{}), Recents: make(map[uint64]common.Address)}
-	continuousInturn := result.config.ContinuousInturn(big.NewInt(int64(block)))
+	continuousInturn := params.ContinousInturn
 	for i := int64(0); i < 21; i++ {
 		addr := validatorAddress(i)
 		result.Validators[addr] = struct{}{}

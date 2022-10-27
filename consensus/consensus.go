@@ -160,7 +160,7 @@ type Democracy interface {
 	AttestationDelay() uint64
 
 	// IsReadyAttest Whether it meets the conditions for executing interest
-	IsReadyAttest(headerNum *big.Int) bool
+	IsReadyAttest() bool
 	AttestationStatus() uint8
 	StartAttestation()
 

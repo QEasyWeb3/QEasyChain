@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/params"
 	"math/big"
 	"runtime"
 	"sort"
@@ -166,8 +167,7 @@ func (bc *BlockChain) processAttestationOnHead(head *types.Header) {
 		firstCatchup := bc.firstCatchUpNumber.Load().(*big.Int)
 		attestationDelay := bc.DPoS.AttestationDelay()
 		// Prevent false triggering during node initialization
-		continuousBlocks := bc.chainConfig.ContinuousInturn()
-		if firstCatchup.Uint64() == 0 && head.Number.Uint64() > continuousBlocks*catchUpSafetyMultiple &&
+		if firstCatchup.Uint64() == 0 && head.Number.Uint64() > params.ContinousInturn*catchUpSafetyMultiple &&
 			uint64(time.Now().Unix()) <= head.Time+catchUpDiffTime {
 			num := head.Number.Uint64() + catchUpDiffBlocks
 			bc.firstCatchUpNumber.Store(new(big.Int).SetUint64(num))

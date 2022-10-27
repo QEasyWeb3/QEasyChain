@@ -11,15 +11,11 @@ import (
 )
 
 const (
-	RedCoast  = "RedCoast"
-	Sophon    = "Sophon"
-	Waterdrop = "Waterdrop"
+	Earth = "Earth"
 )
 
-var hardforkContracts map[string][]IUpgradeAction = map[string][]IUpgradeAction{
-	RedCoast:  RedCoastHardFork(),
-	Sophon:    SophonHardFork(),
-	Waterdrop: WaterdropHardFork(),
+var hardForkContracts map[string][]IUpgradeAction = map[string][]IUpgradeAction{
+	Earth: EarthHardFork(),
 }
 
 // IUpgradeAction is the interface for system contracts upgrades
@@ -44,7 +40,7 @@ func ApplySystemContractUpgrade(hardfork string, state *state.StateDB, header *t
 		log.Error("System contract upgrade failed due to unexpected env", "hardfork", hardfork, "config", config, "header", header, "state", state)
 		return
 	}
-	if contracts, ok := hardforkContracts[hardfork]; ok {
+	if contracts, ok := hardForkContracts[hardfork]; ok {
 		log.Info("Begin system contacts upgrade", "hardfork", hardfork, "height", header.Number, "chainId", config.ChainID)
 		for _, contract := range contracts {
 			log.Info("Upgrade system contract", "name", contract.GetName())

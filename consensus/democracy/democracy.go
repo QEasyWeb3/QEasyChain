@@ -31,7 +31,6 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts"
-	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/consensus"
 	"github.com/ethereum/go-ethereum/consensus/democracy/systemcontract"
@@ -58,8 +57,6 @@ const (
 	wiggleTime        = 500 * time.Millisecond // Random delay (per validator) to allow concurrent validators
 	minNotInTurnDelay = 100 * time.Millisecond // Minimal delay for a not-in-turn validator to seal a block
 	maxValidators     = 21                     // Max validators allowed to seal.
-
-	inmemoryBlacklist = 21 // Number of recent blacklist snapshots to keep in memory
 )
 
 // Democracy proof-of-stake-authority protocol constants.
@@ -150,8 +147,6 @@ var (
 	// errInvalidCoinbase is returned if the coinbase isn't the validator of the block.
 	errInvalidCoinbase = errors.New("Invalid coin base")
 
-	errInvalidSysGovCount = errors.New("invalid system governance tx count")
-
 	// CasperFFG
 	errIsNotReadyAttest        = errors.New("is not ready attest")
 	errIsNotValidator          = errors.New("the signer is not a validator")
@@ -222,9 +217,7 @@ type Democracy struct {
 
 	stateFn StateFn // Function to get state by state root
 
-	abi map[string]abi.ABI // Interactive with system contracts
-
-	chain consensus.ChainHeaderReader // chain is only for reading parent headers when getting blacklist and rules
+	chain consensus.ChainHeaderReader
 
 	// The fields below are for testing only
 	fakeDiff bool // Skip difficulty verifications
@@ -237,7 +230,6 @@ type Democracy struct {
 func New(chainConfig *params.ChainConfig, db ethdb.Database) *Democracy {
 	// Set any missing consensus parameters to their defaults
 	conf := *chainConfig.Democracy
-	// epoch must greater than 1
 	if conf.Epoch <= 1 {
 		conf.Epoch = epochLength
 	}
@@ -617,14 +609,6 @@ func (c *Democracy) Finalize(chain consensus.ChainHeaderReader, header *types.He
 		txs = &ntxs
 	}
 
-	// Initialize all system contracts at block 1.
-	if header.Number.Cmp(common.Big1) == 0 {
-		if err := c.initializeSystemContracts(chain, header, state); err != nil {
-			log.Error("Initialize system contracts failed", "err", err)
-			panic(err)
-		}
-	}
-
 	// Preparing jobs before finalize
 	if err := c.prepareFinalize(chain, header, state, txs, receipts, punishTxs, proposalTxs, false); err != nil {
 		return err
@@ -645,14 +629,6 @@ func (c *Democracy) FinalizeAndAssemble(chain consensus.ChainHeaderReader, heade
 			log.Warn("FinalizeAndAssemble failed", "err", err)
 		}
 	}()
-
-	// Initialize all system contracts at block 1.
-	if header.Number.Cmp(common.Big1) == 0 {
-		if err := c.initializeSystemContracts(chain, header, state); err != nil {
-			log.Error("Initialize system contracts failed", "err", err)
-			panic(err)
-		}
-	}
 	// Preparing jobs before finalize
 	if err := c.prepareFinalize(chain, header, state, &txs, &receipts, nil, nil, true); err != nil {
 		panic(err)
@@ -703,16 +679,12 @@ func (c *Democracy) prepareFinalize(chain consensus.ChainHeaderReader, header *t
 			return err
 		}
 	}
-	if chain.Config().IsWaterdrop(header.Number) {
-		// punish double sign
-		if err := c.punishDoubleSign(chain, header, state, txs, receipts, punishTxs, mined); err != nil {
-			return err
-		}
+	// punish double sign
+	if err := c.punishDoubleSign(chain, header, state, txs, receipts, punishTxs, mined); err != nil {
+		return err
 	}
-	if chain.Config().IsRedCoast(header.Number) {
-		// process proposal
-		return c.processProposalTx(chain, header, state, txs, receipts, proposalTxs, mined)
-	}
+	// process proposal
+	return c.processProposalTx(chain, header, state, txs, receipts, proposalTxs, mined)
 	return nil
 }
 
@@ -753,7 +725,7 @@ func (c *Democracy) tryDistributeBlockFee(chain consensus.ChainHeaderReader, hea
 	// reset fee
 	state.SetBalance(consensus.FeeRecoder, common.Big0)
 
-	return systemcontract.DistributeBlockReward(&systemcontract.CallContext{
+	return systemcontract.DistributeBlockFee(&systemcontract.CallContext{
 		Statedb:      state,
 		Header:       header,
 		ChainContext: newChainContext(chain, c),
@@ -769,7 +741,7 @@ func (c *Democracy) tryLazyPunish(chain consensus.ChainHeaderReader, header *typ
 		return err
 	}
 	validators := snap.validators()
-	continuousBlocks := c.chainConfig.ContinuousInturn()
+	continuousBlocks := params.ContinousInturn
 	outTurnValidator := validators[number%(uint64(len(validators))*continuousBlocks)/continuousBlocks]
 	// check sigend recently or not
 	signedRecently := false
@@ -786,51 +758,6 @@ func (c *Democracy) tryLazyPunish(chain consensus.ChainHeaderReader, header *typ
 			ChainContext: newChainContext(chain, c),
 			ChainConfig:  c.chainConfig,
 		}, outTurnValidator)
-	}
-
-	return nil
-}
-
-// initializeSystemContracts initializes all genesis system contracts.
-func (c *Democracy) initializeSystemContracts(chain consensus.ChainHeaderReader, header *types.Header, state *state.StateDB) error {
-	snap, err := c.snapshot(chain, 0, header.ParentHash, nil)
-	if err != nil {
-		return err
-	}
-
-	genesisValidators := snap.validators()
-	if len(genesisValidators) == 0 || len(genesisValidators) > maxValidators {
-		return errInvalidValidatorsLength
-	}
-
-	const method = "initialize"
-	contracts := []struct {
-		addr    common.Address
-		packFun func() ([]byte, error)
-	}{
-		{system.ValidatorsContract, func() ([]byte, error) {
-			return system.ABI(system.ValidatorsContractName, system.ContractV0).Pack(method, genesisValidators)
-		}},
-		{system.PunishContract, func() ([]byte, error) {
-			return system.ABI(system.PunishContractName, system.ContractV0).Pack(method)
-		}},
-		{system.ProposalContract, func() ([]byte, error) {
-			return system.ABI(system.ProposalContractName, system.ContractV0).Pack(method, genesisValidators)
-		}},
-	}
-
-	for _, contract := range contracts {
-		data, err := contract.packFun()
-		if err != nil {
-			return err
-		}
-
-		nonce := state.GetNonce(header.Coinbase)
-		msg := vmcaller.NewLegacyMessage(header.Coinbase, &contract.addr, nonce, new(big.Int), math.MaxUint64, new(big.Int), data, true)
-
-		if _, err := vmcaller.ExecuteMsg(msg, state, header, newChainContext(chain, c), c.chainConfig); err != nil {
-			return err
-		}
 	}
 
 	return nil
@@ -1029,9 +956,7 @@ func encodeSigHeader(w io.Writer, header *types.Header) {
 func (c *Democracy) PreHandle(chain consensus.ChainHeaderReader, header *types.Header, state *state.StateDB) error {
 	// handle all hardForks
 	for _, hardFork := range []systemcontract.Hardfork{
-		{Name: systemcontract.RedCoast, Number: c.chainConfig.RedCoastBlock},
-		{Name: systemcontract.Sophon, Number: c.chainConfig.SophonBlock},
-		{Name: systemcontract.Waterdrop, Number: c.chainConfig.WaterdropBlock},
+		{Name: systemcontract.Earth, Number: c.chainConfig.EarthBlock},
 	} {
 		if hardFork.Number != nil && hardFork.Number.Cmp(header.Number) == 0 {
 			if err := systemcontract.ApplySystemContractUpgrade(hardFork.Name, state, header,
@@ -1045,9 +970,8 @@ func (c *Democracy) PreHandle(chain consensus.ChainHeaderReader, header *types.H
 
 // CalculateGasPool determines gas limit of each block
 func (c *Democracy) CalculateGasPool(header *types.Header) uint64 {
-	continuousBlocks := c.chainConfig.ContinuousInturn()
-	idxInturn := header.Number.Uint64() % continuousBlocks
-	if idxInturn == 0 || idxInturn == continuousBlocks-1 {
+	idxInturn := header.Number.Uint64() % params.ContinousInturn
+	if idxInturn == 0 || idxInturn == params.ContinousInturn-1 {
 		return header.GasLimit / 2
 	}
 	return header.GasLimit

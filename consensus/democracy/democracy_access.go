@@ -87,7 +87,7 @@ func (b *democracyAccessFilter) IsLogDenied(evLog *types.Log) bool {
 // This will queries the system Developers contract, by DIRECTLY to get the target slot value of the contract,
 // it means that it's strongly relative to the layout of the Developers contract's state variables
 func (c *Democracy) CanCreate(state consensus.StateReader, addr common.Address, isContract bool, height *big.Int) bool {
-	if c.chainConfig.IsRedCoast(height) && c.config.EnableDevVerification {
+	if c.config.EnableDevVerification {
 		devVerifyEnabled := systemcontract.IsDeveloperVerificationEnabled(state, height, c.chainConfig)
 		if devVerifyEnabled {
 			slot := calcSlotOfDevMappingKey(addr)
@@ -103,22 +103,18 @@ func (c *Democracy) CanCreate(state consensus.StateReader, addr common.Address, 
 // FilterTx do a consensus-related validation on the given transaction at the given header and state.
 // the parentState must be the state of the header's parent block.
 func (c *Democracy) FilterTx(sender common.Address, tx *types.Transaction, header *types.Header, parentState *state.StateDB) error {
-	// Must use the parent state for current validation,
-	// so we must starting the validation after redCoastBlock
-	if c.chainConfig.RedCoastBlock != nil && c.chainConfig.RedCoastBlock.Cmp(header.Number) < 0 {
-		m, err := c.getAccessList(header, parentState)
-		if err != nil {
-			return err
-		}
-		if d, exist := m[sender]; exist && (d != DirectionTo) {
-			log.Trace("Hit access filter", "tx", tx.Hash().String(), "addr", sender.String(), "direction", d)
+	m, err := c.getAccessList(header, parentState)
+	if err != nil {
+		return err
+	}
+	if d, exist := m[sender]; exist && (d != DirectionTo) {
+		log.Trace("Hit access filter", "tx", tx.Hash().String(), "addr", sender.String(), "direction", d)
+		return types.ErrAddressDenied
+	}
+	if to := tx.To(); to != nil {
+		if d, exist := m[*to]; exist && (d != DirectionFrom) {
+			log.Trace("Hit access filter", "tx", tx.Hash().String(), "addr", to.String(), "direction", d)
 			return types.ErrAddressDenied
-		}
-		if to := tx.To(); to != nil {
-			if d, exist := m[*to]; exist && (d != DirectionFrom) {
-				log.Trace("Hit access filter", "tx", tx.Hash().String(), "addr", to.String(), "direction", d)
-				return types.ErrAddressDenied
-			}
 		}
 	}
 	return nil
@@ -139,24 +135,22 @@ func (c *Democracy) getAccessList(header *types.Header, parentState *state.State
 		return v.(map[common.Address]accessDirection), nil
 	}
 
-	// if the last updates is long ago, we don't need to get blacklist from the contract.
-	if c.chainConfig.SophonBlock != nil && header.Number.Cmp(c.chainConfig.SophonBlock) > 0 {
-		// if the last updates is long ago, we don't need to get accesslist from the contract.
-		num := header.Number.Uint64()
-		lastUpdated := systemcontract.LastBlackUpdatedNumber(parentState, header.Number, c.chainConfig)
-		if num >= 2 && num > lastUpdated+1 {
-			parent := c.chain.GetHeader(header.ParentHash, num-1)
-			if parent != nil {
-				if v, ok := c.accesslist.Get(parent.ParentHash); ok {
-					m := v.(map[common.Address]accessDirection)
-					c.accesslist.Add(header.ParentHash, m)
-					return m, nil
-				}
-			} else {
-				log.Error("Unexpected error when getAccessList, can not get parent from chain", "number", num, "blockHash", header.Hash(), "parentHash", header.ParentHash)
+	// if the last updates is long ago, we don't need to get accesslist from the contract.
+	num := header.Number.Uint64()
+	lastUpdated := systemcontract.LastBlackUpdatedNumber(parentState, header.Number, c.chainConfig)
+	if num >= 2 && num > lastUpdated+1 {
+		parent := c.chain.GetHeader(header.ParentHash, num-1)
+		if parent != nil {
+			if v, ok := c.accesslist.Get(parent.ParentHash); ok {
+				m := v.(map[common.Address]accessDirection)
+				c.accesslist.Add(header.ParentHash, m)
+				return m, nil
 			}
+		} else {
+			log.Error("Unexpected error when getAccessList, can not get parent from chain", "number", num, "blockHash", header.Hash(), "parentHash", header.ParentHash)
 		}
 	}
+
 	// can't get access list from cache, try to call the contract
 	ctx := &systemcontract.CallContext{
 		Statedb:      parentState,
@@ -190,23 +184,20 @@ func (c *Democracy) getAccessList(header *types.Header, parentState *state.State
 }
 
 func (c *Democracy) CreateEvmAccessFilter(header *types.Header, parentState *state.StateDB) vm.EvmAccessFilter {
-	if c.chainConfig.SophonBlock != nil && c.chainConfig.SophonBlock.Cmp(header.Number) < 0 {
-		accesses, err := c.getAccessList(header, parentState)
-		if err != nil {
-			log.Error("getAccessList failed", "err", err)
-			return nil
-		}
-		rules, err := c.getEventCheckRules(header, parentState)
-		if err != nil {
-			log.Error("getEventCheckRules failed", "err", err)
-			return nil
-		}
-		return &democracyAccessFilter{
-			accesses: accesses,
-			rules:    rules,
-		}
+	accesses, err := c.getAccessList(header, parentState)
+	if err != nil {
+		log.Error("getAccessList failed", "err", err)
+		return nil
 	}
-	return nil
+	rules, err := c.getEventCheckRules(header, parentState)
+	if err != nil {
+		log.Error("getEventCheckRules failed", "err", err)
+		return nil
+	}
+	return &democracyAccessFilter{
+		accesses: accesses,
+		rules:    rules,
+	}
 }
 
 func (c *Democracy) getEventCheckRules(header *types.Header, parentState *state.StateDB) (map[common.Hash]*EventCheckRule, error) {

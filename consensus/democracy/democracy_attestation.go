@@ -378,9 +378,6 @@ func (c *Democracy) executeDoubleSignPunishMsg(chain consensus.ChainHeaderReader
 // IsDoubleSignPunishTransaction Judge whether the transaction is a multi sign penalty transaction.
 // Due to the particularity of transaction data, a special to address is used to distinguish
 func (c *Democracy) IsDoubleSignPunishTransaction(sender common.Address, tx *types.Transaction, header *types.Header) bool {
-	if !c.chainConfig.IsWaterdrop(header.Number) {
-		return false
-	}
 	if tx.To() == nil || len(tx.Data()) < 4 {
 		return false
 	}

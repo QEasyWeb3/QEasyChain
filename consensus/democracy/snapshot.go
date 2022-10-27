@@ -17,8 +17,8 @@
 package democracy
 
 import (
-	"bytes"
 	"encoding/json"
+	"github.com/ethereum/go-ethereum/consensus/democracy/systemcontract"
 	"sort"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -39,13 +39,6 @@ type Snapshot struct {
 	Validators map[common.Address]struct{} `json:"validators"` // Set of authorized validators at this moment
 	Recents    map[uint64]common.Address   `json:"recents"`    // Set of recent validators for spam protections
 }
-
-// validatorsAscending implements the sort interface to allow sorting a list of addresses
-type validatorsAscending []common.Address
-
-func (s validatorsAscending) Len() int           { return len(s) }
-func (s validatorsAscending) Less(i, j int) bool { return bytes.Compare(s[i][:], s[j][:]) < 0 }
-func (s validatorsAscending) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
 
 // newSnapshot creates a new snapshot with the specified startup parameters. This
 // method does not initialize the set of recent validators, so only ever use if for
@@ -112,7 +105,7 @@ func (s *Snapshot) copy() *Snapshot {
 
 // SignedRecently checks whether the validator signed block recently
 func (s *Snapshot) SignedRecently(block uint64, validator common.Address) bool {
-	continuousInturn := s.config.ContinuousInturn()
+	continuousInturn := params.ContinousInturn
 	limit := uint64(len(s.Validators)/2+1) * continuousInturn
 	var count uint64
 	for blockNum, recent := range s.Recents {
@@ -145,7 +138,7 @@ func (s *Snapshot) apply(headers []*types.Header, chain consensus.ChainHeaderRea
 	for i, header := range headers {
 		// Remove any votes on checkpoint blocks
 		number := header.Number.Uint64()
-		continuousInturn := s.config.ContinuousInturn()
+		continuousInturn := params.ContinousInturn
 		if limit := uint64(len(snap.Validators)/2+1) * continuousInturn; number >= limit {
 			// Delete the oldest validator from the recent list to allow it signing again
 			delete(snap.Recents, number-limit)
@@ -220,7 +213,7 @@ func (s *Snapshot) validators() []common.Address {
 	for sig := range s.Validators {
 		sigs = append(sigs, sig)
 	}
-	sort.Sort(validatorsAscending(sigs))
+	sort.Sort(systemcontract.AddrAscend(sigs))
 	return sigs
 }
 
@@ -230,7 +223,7 @@ func (s *Snapshot) inturn(number uint64, validator common.Address) bool {
 	for offset < len(validators) && validators[offset] != validator {
 		offset++
 	}
-	continousInturn := s.config.ContinuousInturn()
+	continousInturn := params.ContinousInturn
 	return (number%(uint64(len(validators))*continousInturn))/continousInturn == uint64(offset)
 }
 
