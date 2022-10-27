@@ -37,7 +37,7 @@ type Proposal struct {
 // GetTopValidators return the result of calling method `getTopValidators` in Staking contract
 func GetTopValidators(ctx *CallContext) ([]common.Address, error) {
 	const method = "getTopValidators"
-	result, err := contractRead(ctx, system.ValidatorsContractName, method)
+	result, err := contractRead(ctx, system.SysContractName, method)
 	if err != nil {
 		log.Error("GetTopValidators contractRead failed", "err", err)
 		return []common.Address{}, err
@@ -53,7 +53,7 @@ func GetTopValidators(ctx *CallContext) ([]common.Address, error) {
 // UpdateActiveValidatorSet return the result of calling method `updateActiveValidatorSet` in Staking contract
 func UpdateActiveValidatorSet(ctx *CallContext, newValidators []common.Address) error {
 	const method = "updateActiveValidatorSet"
-	err := contractWrite(ctx, system.ValidatorsContractName, method, newValidators, new(big.Int).SetUint64(ctx.ChainConfig.Democracy.Epoch))
+	err := contractWrite(ctx, system.SysContractName, method, newValidators, new(big.Int).SetUint64(ctx.ChainConfig.Democracy.Epoch))
 	if err != nil {
 		log.Error("UpdateActiveValidatorSet failed", "newValidators", newValidators, "err", err)
 	}
@@ -63,7 +63,7 @@ func UpdateActiveValidatorSet(ctx *CallContext, newValidators []common.Address) 
 // DecreaseMissedBlocksCounter return the result of calling method `decreaseMissedBlocksCounter` in Staking contract
 func DecreaseMissedBlocksCounter(ctx *CallContext) error {
 	const method = "decreaseMissedBlocksCounter"
-	err := contractWrite(ctx, system.PunishContractName, method, new(big.Int).SetUint64(ctx.ChainConfig.Democracy.Epoch))
+	err := contractWrite(ctx, system.SysContractName, method, new(big.Int).SetUint64(ctx.ChainConfig.Democracy.Epoch))
 	if err != nil {
 		log.Error("DecreaseMissedBlocksCounter failed", "err", err)
 	}
@@ -72,7 +72,7 @@ func DecreaseMissedBlocksCounter(ctx *CallContext) error {
 
 // DistributeBlockFee return the result of calling method `distributeBlockFee` in Staking contract
 func DistributeBlockFee(ctx *CallContext, fee *big.Int) error {
-	contractName := system.ValidatorsContractName
+	contractName := system.SysContractName
 	const method = "distributeBlockFee"
 	data, err := system.ABIPack(contractName, ctx.GetContractVersion(contractName), method)
 	if err != nil {
@@ -88,8 +88,8 @@ func DistributeBlockFee(ctx *CallContext, fee *big.Int) error {
 
 // LazyPunish return the result of calling method `lazyPunish` in Staking contract
 func LazyPunish(ctx *CallContext, validator common.Address) error {
-	const method = "punish"
-	err := contractWrite(ctx, system.PunishContractName, method, validator)
+	const method = "lazyPunish"
+	err := contractWrite(ctx, system.SysContractName, method, validator)
 	if err != nil {
 		log.Error("LazyPunish failed", "validator", validator, "err", err)
 	}
@@ -99,7 +99,7 @@ func LazyPunish(ctx *CallContext, validator common.Address) error {
 // DoubleSignPunish return the result of calling method `doubleSignPunish` in Staking contract
 func DoubleSignPunish(ctx *CallContext, punishHash common.Hash, validator common.Address) error {
 	const method = "doubleSignPunish"
-	err := contractWrite(ctx, system.PunishContractName, method, punishHash, validator)
+	err := contractWrite(ctx, system.SysContractName, method, punishHash, validator)
 	if err != nil {
 		log.Error("DoubleSignPunish failed", "punishHash", punishHash, "validator", validator, "err", err)
 	}
@@ -108,7 +108,7 @@ func DoubleSignPunish(ctx *CallContext, punishHash common.Hash, validator common
 
 // DoubleSignPunishWithGivenEVM return the result of calling method `doubleSignPunish` in Staking contract with given EVM
 func DoubleSignPunishWithGivenEVM(evm *vm.EVM, from common.Address, punishHash common.Hash, validator common.Address) error {
-	contractName := system.PunishContractName
+	contractName := system.SysContractName
 	version := system.GetContractVersion(contractName, evm.Context.BlockNumber, evm.ChainConfig())
 	contract := system.GetContractAddress(contractName, version)
 
@@ -128,7 +128,7 @@ func DoubleSignPunishWithGivenEVM(evm *vm.EVM, from common.Address, punishHash c
 // IsDoubleSignPunished return the result of calling method `isDoubleSignPunished` in Staking contract
 func IsDoubleSignPunished(ctx *CallContext, punishHash common.Hash) (bool, error) {
 	const method = "isDoubleSignPunished"
-	result, err := contractRead(ctx, system.PunishContractName, method, punishHash)
+	result, err := contractRead(ctx, system.SysContractName, method, punishHash)
 	if err != nil {
 		log.Error("IsDoubleSignPunished contractRead failed", "punishHash", punishHash, "err", err)
 		return true, err
@@ -254,7 +254,7 @@ func LastRulesUpdatedNumber(state consensus.StateReader, height *big.Int, config
 // GetPassedProposalCount returns passed proposal count
 func GetPassedProposalCount(ctx *CallContext) (uint32, error) {
 	const method = "getPassedProposalCount"
-	result, err := contractRead(ctx, system.SysGovContractName, method)
+	result, err := contractRead(ctx, system.OnChainDaoContractName, method)
 	if err != nil {
 		log.Error("GetPassedProposalCount contractRead failed", "err", err)
 		return 0, err
@@ -268,7 +268,7 @@ func GetPassedProposalCount(ctx *CallContext) (uint32, error) {
 
 // GetPassedProposalByIndex returns passed proposal by index
 func GetPassedProposalByIndex(ctx *CallContext, idx uint32) (*Proposal, error) {
-	contractName := system.SysGovContractName
+	contractName := system.OnChainDaoContractName
 	const method = "getPassedProposalByIndex"
 	abi := system.ABI(contractName, ctx.GetContractVersion(contractName))
 	result, err := contractReadBytes(ctx, ctx.GetContractAddress(contractName), &abi, method, idx)
@@ -288,7 +288,7 @@ func GetPassedProposalByIndex(ctx *CallContext, idx uint32) (*Proposal, error) {
 // FinishProposalById finish passed proposal by id
 func FinishProposalById(ctx *CallContext, id *big.Int) error {
 	const method = "finishProposalById"
-	err := contractWrite(ctx, system.SysGovContractName, method, id)
+	err := contractWrite(ctx, system.OnChainDaoContractName, method, id)
 	if err != nil {
 		log.Error("FinishProposalById failed", "id", id, "err", err)
 	}

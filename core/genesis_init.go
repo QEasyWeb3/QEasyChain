@@ -97,7 +97,7 @@ func (env *genesisInit) initStaking() error {
 	contract.Balance = totalValidatorStake
 	env.state.SetBalance(system.SystemContract, contract.Balance)
 
-	_, err := env.callContract(system.SystemContractName, "initialize",
+	_, err := env.callContract(system.SysContractName, "initialize",
 		contract.Init.Admin,
 		system.MaxValidators,
 		big.NewInt(int64(env.genesis.Config.Democracy.Epoch)),
@@ -138,7 +138,7 @@ func (env *genesisInit) initValidators() ([]byte, error) {
 	extra := make([]byte, 0, extraVanity+common.AddressLength*len(env.genesis.Validators)+extraSeal)
 	extra = append(extra, env.header.Extra[:extraVanity]...)
 	for _, v := range env.genesis.Validators {
-		if _, err := env.callContract(system.SystemContractName, "initValidator",
+		if _, err := env.callContract(system.SysContractName, "initValidator",
 			v.Address, v.Manager, v.Rate, v.Stake, v.AcceptDelegation); err != nil {
 			return env.header.Extra, err
 		}
@@ -147,7 +147,7 @@ func (env *genesisInit) initValidators() ([]byte, error) {
 	}
 	extra = append(extra, env.header.Extra[len(env.header.Extra)-extraSeal:]...)
 	env.header.Extra = extra
-	if _, err := env.callContract(system.SystemContractName, "updateActiveValidatorSet", activeSet); err != nil {
+	if _, err := env.callContract(system.SysContractName, "updateActiveValidatorSet", activeSet); err != nil {
 		return extra, err
 	}
 	return env.header.Extra, nil

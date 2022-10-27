@@ -24,14 +24,14 @@ type SysContractV1HardFork struct {
 }
 
 func (s *SysContractV1HardFork) GetName() string {
-	return system.ValidatorsContractName
+	return system.SysContractName
 }
 
 func (s *SysContractV1HardFork) DoUpdate(state *state.StateDB, header *types.Header, chainContext core.ChainContext, config *params.ChainConfig) (err error) {
 	contractCode := common.FromHex(SysContractV1Code)
 
 	//write validatorsV2Code to sys contract
-	state.SetCode(system.ValidatorsV1Contract, contractCode)
-	log.Debug("Upgrade code to system contract account", "addr", system.ValidatorsV1Contract.String(), "code", SysContractV1Code)
+	state.SetCode(system.SystemContract, contractCode)
+	log.Debug("Upgrade code to system contract account", "addr", system.SystemContract.String(), "code", SysContractV1Code)
 	return
 }

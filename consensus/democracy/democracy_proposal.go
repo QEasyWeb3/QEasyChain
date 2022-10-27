@@ -243,7 +243,7 @@ func (c *Democracy) IsSysTransaction(sender common.Address, tx *types.Transactio
 	}
 	// Make sure the miner can NOT call the system contract through a normal transaction.
 	if sender == header.Coinbase {
-		contract := system.GetContractAddressByConfig(system.SysGovContractName, header.Number, c.chainConfig)
+		contract := system.GetContractAddressByConfig(system.OnChainDaoContractName, header.Number, c.chainConfig)
 		if *to == contract {
 			return true
 		}

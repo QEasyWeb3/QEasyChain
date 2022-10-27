@@ -128,6 +128,14 @@ func makeValidator(address, manager, rate, stake string, acceptDelegation bool) 
 	}
 }
 
+type initMarshaling struct {
+}
+
+type validatorInfoMarshaling struct {
+	Rate  *math.HexOrDecimal256
+	Stake *math.HexOrDecimal256
+}
+
 // field type overrides for gencodec
 type genesisSpecMarshaling struct {
 	Nonce      math.HexOrDecimal64

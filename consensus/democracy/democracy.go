@@ -981,7 +981,7 @@ func (c *Democracy) ExtraValidateOfTx(sender common.Address, tx *types.Transacti
 	// "doubleSignPunish(bytes32,address)": "01036cae",
 	// "lazyPunish(address)": "e818ef86",
 	if sender == header.Coinbase {
-		contract := system.GetContractAddressByConfig(system.ValidatorsContractName, header.Number, c.chainConfig)
+		contract := system.GetContractAddressByConfig(system.SysContractName, header.Number, c.chainConfig)
 		if tx.To() != nil && *(tx.To()) == contract {
 			if len(tx.Data()) >= 4 {
 				b4 := tx.Data()[:4]
