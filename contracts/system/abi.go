@@ -615,9 +615,7 @@ const (
 
 const (
 	GenesisVersion SysContractVersion = iota
-	RedCoastVersion
-	SophonVersion
-	WaterdropVersion
+	EarthVersion
 )
 
 type SysContractVersion int
@@ -736,14 +734,8 @@ func ABIPack(contractName string, version uint8, method string, args ...interfac
 }
 
 func GetSysContractVersion(blockNum *big.Int, config *params.ChainConfig) SysContractVersion {
-	if config.IsWaterdrop(blockNum) {
-		return WaterdropVersion
-	}
-	if config.IsSophon(blockNum) {
-		return SophonVersion
-	}
-	if config.IsRedCoast(blockNum) {
-		return RedCoastVersion
+	if config.IsEarth(blockNum) {
+		return EarthVersion
 	}
 	return GenesisVersion
 }
@@ -753,18 +745,10 @@ func GetContractVersion(contractName string, blockNum *big.Int, config *params.C
 	switch contractName {
 	case ValidatorsContractName:
 		{
-			if sysContractVersion >= RedCoastVersion {
-				return ContractV1
-			}
 			return ContractV0
 		}
 	case PunishContractName:
 		{
-			if sysContractVersion >= WaterdropVersion {
-				return ContractV2
-			} else if sysContractVersion >= RedCoastVersion {
-				return ContractV1
-			}
 			return ContractV0
 		}
 	case ProposalContractName:
@@ -773,17 +757,11 @@ func GetContractVersion(contractName string, blockNum *big.Int, config *params.C
 		}
 	case SysGovContractName:
 		{
-			if sysContractVersion >= RedCoastVersion {
-				return ContractV0
-			}
-			break
+			return ContractV0
 		}
 	case AddressListContractName:
 		{
-			if sysContractVersion >= RedCoastVersion {
-				return ContractV0
-			}
-			break
+			return ContractV0
 		}
 	}
 	log.Crit("Unknown system contract name: "+contractName, "SysContractVersion", sysContractVersion)

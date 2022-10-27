@@ -769,7 +769,7 @@ func (c *Democracy) tryLazyPunish(chain consensus.ChainHeaderReader, header *typ
 		return err
 	}
 	validators := snap.validators()
-	continuousBlocks := c.chainConfig.DemocracyContinuousInturn(header.Number)
+	continuousBlocks := c.chainConfig.ContinuousInturn()
 	outTurnValidator := validators[number%(uint64(len(validators))*continuousBlocks)/continuousBlocks]
 	// check sigend recently or not
 	signedRecently := false
@@ -1045,7 +1045,7 @@ func (c *Democracy) PreHandle(chain consensus.ChainHeaderReader, header *types.H
 
 // CalculateGasPool determines gas limit of each block
 func (c *Democracy) CalculateGasPool(header *types.Header) uint64 {
-	continuousBlocks := c.chainConfig.DemocracyContinuousInturn(header.Number)
+	continuousBlocks := c.chainConfig.ContinuousInturn()
 	idxInturn := header.Number.Uint64() % continuousBlocks
 	if idxInturn == 0 || idxInturn == continuousBlocks-1 {
 		return header.GasLimit / 2

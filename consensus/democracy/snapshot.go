@@ -19,7 +19,6 @@ package democracy
 import (
 	"bytes"
 	"encoding/json"
-	"math/big"
 	"sort"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -113,10 +112,7 @@ func (s *Snapshot) copy() *Snapshot {
 
 // SignedRecently checks whether the validator signed block recently
 func (s *Snapshot) SignedRecently(block uint64, validator common.Address) bool {
-	if s.config.WaterdropBlock != nil && s.config.WaterdropBlock.Uint64() == block {
-		return false
-	}
-	continuousInturn := s.config.DemocracyContinuousInturn(big.NewInt(int64(block)))
+	continuousInturn := s.config.ContinuousInturn()
 	limit := uint64(len(s.Validators)/2+1) * continuousInturn
 	var count uint64
 	for blockNum, recent := range s.Recents {
@@ -149,11 +145,8 @@ func (s *Snapshot) apply(headers []*types.Header, chain consensus.ChainHeaderRea
 	for i, header := range headers {
 		// Remove any votes on checkpoint blocks
 		number := header.Number.Uint64()
-		continuousInturn := s.config.DemocracyContinuousInturn(header.Number)
-		// When Waterdrop hard fork happens, clear recents
-		if snap.config.WaterdropBlock != nil && snap.config.WaterdropBlock.Uint64() == number {
-			snap.Recents = make(map[uint64]common.Address)
-		} else if limit := uint64(len(snap.Validators)/2+1) * continuousInturn; number >= limit {
+		continuousInturn := s.config.ContinuousInturn()
+		if limit := uint64(len(snap.Validators)/2+1) * continuousInturn; number >= limit {
 			// Delete the oldest validator from the recent list to allow it signing again
 			delete(snap.Recents, number-limit)
 		}
@@ -176,25 +169,21 @@ func (s *Snapshot) apply(headers []*types.Header, chain consensus.ChainHeaderRea
 		// the blocks ≥ ((waterdropBlock/EpochPeriod)+1)*EpochPeriod + 1 are using the look-back validators set.
 		if number > 0 && number%s.config.Democracy.Epoch == 0 {
 			var checkpointHeader *types.Header
-			if snap.config.IsWaterdrop(header.Number) {
-				// For a large chain insertion, the previous blocks may not have been written to db,
-				// so we need to find it through both previous `headers` and parents
-				if uint64(i) >= s.config.Democracy.Epoch {
-					checkpointHeader = headers[i-int(s.config.Democracy.Epoch)]
+			// For a large chain insertion, the previous blocks may not have been written to db,
+			// so we need to find it through both previous `headers` and parents
+			if uint64(i) >= s.config.Democracy.Epoch {
+				checkpointHeader = headers[i-int(s.config.Democracy.Epoch)]
+			} else {
+				// i < epoch ==> epoch -i >= 1
+				idxInParents := len(parents) - (int(s.config.Democracy.Epoch) - i)
+				if idxInParents >= 0 {
+					checkpointHeader = parents[idxInParents]
 				} else {
-					// i < epoch ==> epoch -i >= 1
-					idxInParents := len(parents) - (int(s.config.Democracy.Epoch) - i)
-					if idxInParents >= 0 {
-						checkpointHeader = parents[idxInParents]
-					} else {
-						checkpointHeader = chain.GetHeaderByNumber(number - s.config.Democracy.Epoch)
-						if checkpointHeader == nil {
-							return nil, consensus.ErrUnknownAncestor
-						}
+					checkpointHeader = chain.GetHeaderByNumber(number - s.config.Democracy.Epoch)
+					if checkpointHeader == nil {
+						return nil, consensus.ErrUnknownAncestor
 					}
 				}
-			} else {
-				checkpointHeader = header
 			}
 
 			// get validators from headers and use that for new validator set
@@ -241,7 +230,7 @@ func (s *Snapshot) inturn(number uint64, validator common.Address) bool {
 	for offset < len(validators) && validators[offset] != validator {
 		offset++
 	}
-	continousInturn := s.config.DemocracyContinuousInturn(big.NewInt(int64(number)))
+	continousInturn := s.config.ContinuousInturn()
 	return (number%(uint64(len(validators))*continousInturn))/continousInturn == uint64(offset)
 }
 

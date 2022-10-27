@@ -166,7 +166,7 @@ func (bc *BlockChain) processAttestationOnHead(head *types.Header) {
 		firstCatchup := bc.firstCatchUpNumber.Load().(*big.Int)
 		attestationDelay := bc.DPoS.AttestationDelay()
 		// Prevent false triggering during node initialization
-		continuousBlocks := bc.chainConfig.DemocracyContinuousInturn(head.Number)
+		continuousBlocks := bc.chainConfig.ContinuousInturn()
 		if firstCatchup.Uint64() == 0 && head.Number.Uint64() > continuousBlocks*catchUpSafetyMultiple &&
 			uint64(time.Now().Unix()) <= head.Time+catchUpDiffTime {
 			num := head.Number.Uint64() + catchUpDiffBlocks
