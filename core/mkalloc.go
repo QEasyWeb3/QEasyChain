@@ -40,7 +40,7 @@ import (
 )
 
 type initArgs struct {
-	Admin           *big.Int
+	Admin *big.Int
 }
 type allocItem struct {
 	Addr    *big.Int

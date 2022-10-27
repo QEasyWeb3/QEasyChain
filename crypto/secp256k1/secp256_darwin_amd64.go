@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be found in
 // the LICENSE file.
 
+//go:build darwin && amd64 && !ios
 // +build darwin,amd64,!ios
 
 // Package secp256k1 wraps the bitcoin secp256k1 C library.
