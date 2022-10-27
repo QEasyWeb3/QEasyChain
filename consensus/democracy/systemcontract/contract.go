@@ -16,8 +16,6 @@ import (
 	"github.com/ethereum/go-ethereum/log"
 )
 
-const TopValidatorNum uint8 = 21
-
 // AddrAscend implements the sort interface to allow sorting a list of addresses
 type AddrAscend []common.Address
 
@@ -37,7 +35,7 @@ type Proposal struct {
 // GetTopValidators return the result of calling method `getTopValidators` in Staking contract
 func GetTopValidators(ctx *CallContext) ([]common.Address, error) {
 	const method = "getTopValidators"
-	result, err := contractRead(ctx, system.SysContractName, method)
+	result, err := contractRead(ctx, system.SysContractName, method, system.MaxValidators)
 	if err != nil {
 		log.Error("GetTopValidators contractRead failed", "err", err)
 		return []common.Address{}, err

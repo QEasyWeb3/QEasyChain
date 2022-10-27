@@ -138,7 +138,7 @@ func (c *Democracy) CurrentValidator() common.Address {
 }
 
 func (c *Democracy) MaxValidators() uint8 {
-	return systemcontract.TopValidatorNum
+	return system.MaxValidators
 }
 
 func (c *Democracy) Attest(chain consensus.ChainHeaderReader, headerNum *big.Int, source, target *types.RangeEdge) (*types.Attestation, error) {
