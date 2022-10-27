@@ -191,7 +191,7 @@ type BlockFetcher struct {
 	insertHeaders   headersInsertFn    // Injects a batch of headers into the chain
 	insertChain     chainInsertFn      // Injects a batch of blocks into the chain
 	dropPeer        peerDropFn         // Drops a peer for misbehaving
-	continousInturn continousInturnFn  // Gets continous blocks in turn number
+	continousInturn uint64             // Gets continous blocks in turn number
 
 	// Testing hooks
 	announceChangeHook func(common.Hash, bool)           // Method to call upon adding or deleting a hash from the blockAnnounce list
@@ -202,7 +202,7 @@ type BlockFetcher struct {
 }
 
 // NewBlockFetcher creates a block fetcher to retrieve blocks based on hash announcements.
-func NewBlockFetcher(light bool, getHeader HeaderRetrievalFn, getBlock blockRetrievalFn, verifyHeader headerVerifierFn, broadcastBlock blockBroadcasterFn, chainHeight chainHeightFn, insertHeaders headersInsertFn, insertChain chainInsertFn, dropPeer peerDropFn, continousInturn continousInturnFn) *BlockFetcher {
+func NewBlockFetcher(light bool, getHeader HeaderRetrievalFn, getBlock blockRetrievalFn, verifyHeader headerVerifierFn, broadcastBlock blockBroadcasterFn, chainHeight chainHeightFn, insertHeaders headersInsertFn, insertChain chainInsertFn, dropPeer peerDropFn, continousInturn uint64) *BlockFetcher {
 	return &BlockFetcher{
 		light:           light,
 		notify:          make(chan *blockAnnounce),
@@ -364,7 +364,7 @@ func (f *BlockFetcher) loop() {
 			// If too high up the chain or phase, continue later
 			number := op.number()
 			if number > height+1 {
-				if !f.hasParent(op) || number > height+f.continousInturn(big.NewInt(int64(number)))+1 {
+				if !f.hasParent(op) || number > height+f.continousInturn+1 {
 					f.queue.Push(op, -int64(number))
 					if f.queueChangeHook != nil {
 						f.queueChangeHook(hash, true)

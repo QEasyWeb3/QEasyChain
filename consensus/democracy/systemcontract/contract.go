@@ -70,17 +70,17 @@ func DecreaseMissedBlocksCounter(ctx *CallContext) error {
 	return err
 }
 
-// DistributeBlockReward return the result of calling method `distributeBlockReward` in Staking contract
-func DistributeBlockReward(ctx *CallContext, fee *big.Int) error {
+// DistributeBlockFee return the result of calling method `distributeBlockFee` in Staking contract
+func DistributeBlockFee(ctx *CallContext, fee *big.Int) error {
 	contractName := system.ValidatorsContractName
-	const method = "distributeBlockReward"
+	const method = "distributeBlockFee"
 	data, err := system.ABIPack(contractName, ctx.GetContractVersion(contractName), method)
 	if err != nil {
-		log.Error("Can't pack data for distributeBlockReward", "error", err)
+		log.Error("Can't pack data for distributeBlockFee", "error", err)
 		return err
 	}
 	if _, err := CallContractWithValue(ctx, ctx.Header.Coinbase, ctx.GetContractAddress(contractName), data, fee); err != nil {
-		log.Error("distributeBlockReward failed", "fee", fee, "err", err)
+		log.Error("distributeBlockFee failed", "fee", fee, "err", err)
 		return err
 	}
 	return nil

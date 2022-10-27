@@ -142,7 +142,7 @@ func (c *Democracy) MaxValidators() uint8 {
 }
 
 func (c *Democracy) Attest(chain consensus.ChainHeaderReader, headerNum *big.Int, source, target *types.RangeEdge) (*types.Attestation, error) {
-	if !c.IsReadyAttest(headerNum) {
+	if !c.IsReadyAttest() {
 		return nil, errIsNotReadyAttest
 	}
 	if !c.IsAuthorizedAtHeight(chain, c.validator, target.Number.Uint64()) {
@@ -199,8 +199,8 @@ func (c *Democracy) AttestationDelay() uint64 {
 	return c.config.AttestationDelay
 }
 
-func (c *Democracy) IsReadyAttest(headerNum *big.Int) bool {
-	return c.isReady && c.chainConfig.IsWaterdrop(headerNum) && c.attestationStatus == types.AttestationStart
+func (c *Democracy) IsReadyAttest() bool {
+	return c.isReady && c.attestationStatus == types.AttestationStart
 }
 
 func (c *Democracy) AttestationThreshold(chain consensus.ChainHeaderReader, hash common.Hash, number uint64) (int, error) {

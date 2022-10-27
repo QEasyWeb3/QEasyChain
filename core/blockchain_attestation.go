@@ -186,7 +186,7 @@ func (bc *BlockChain) processAttestationOnHead(head *types.Header) {
 		log.Error(err.Error())
 		return
 	}
-	if bc.DPoS.IsReadyAttest(head.Number) {
+	if bc.DPoS.IsReadyAttest() {
 		// From the perspective of the current node itself, all it can do is create
 		// attestation in turn, and it cannot initiate across heights
 		a, err := bc.bestAttestationToProcessed(head.Number)
