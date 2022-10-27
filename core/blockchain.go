@@ -214,8 +214,8 @@ type BlockChain struct {
 
 	shouldPreserve func(*types.Block) bool // Function used to determine whether should preserve the given block.
 
-	DPoS                     consensus.Democracy
-	isDPoS                   bool
+	Democracy                consensus.Democracy
+	isDemocracy              bool
 	currentAttestedNumber    atomic.Value // Currently the latest attested block number that is stored in db
 	currentBlockStatusNumber atomic.Value
 	lastFinalizedBlockNumber atomic.Value
@@ -276,10 +276,10 @@ func NewBlockChain(db ethdb.Database, cacheConfig *CacheConfig, chainConfig *par
 	bc.prefetcher = newStatePrefetcher(chainConfig, bc, engine)
 	bc.processor = NewStateProcessor(chainConfig, bc, engine)
 
-	bc.DPoS, bc.isDPoS = engine.(consensus.Democracy)
-	if bc.isDPoS {
+	bc.Democracy, bc.isDemocracy = engine.(consensus.Democracy)
+	if bc.isDemocracy {
 		// load stored last attested number
-		currentAttested := rawdb.ReadLastAttestNumber(bc.db, bc.DPoS.CurrentValidator())
+		currentAttested := rawdb.ReadLastAttestNumber(bc.db, bc.Democracy.CurrentValidator())
 		bc.currentAttestedNumber.Store(currentAttested)
 		log.Info("last stored attested number", "num", currentAttested)
 
@@ -431,7 +431,7 @@ func NewBlockChain(db ethdb.Database, cacheConfig *CacheConfig, chainConfig *par
 	go bc.futureBlocksLoop()
 
 	// Start attestation processor
-	if bc.isDPoS {
+	if bc.isDemocracy {
 		bc.wg.Add(1)
 		go bc.attestationHandleLoop()
 	}
@@ -680,7 +680,7 @@ func (bc *BlockChain) setHeadBeyondRoot(head uint64, root common.Hash, repair bo
 	bc.txLookupCache.Purge()
 	bc.futureBlocks.Purge()
 
-	if bc.isDPoS {
+	if bc.isDemocracy {
 		bc.FutureAttessCache.Purge()
 		bc.RecentAttessCache.Purge()
 		bc.HistoryAttessCache.Purge()

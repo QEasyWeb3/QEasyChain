@@ -37,10 +37,10 @@ func (bc *BlockChain) UpdateBlockStatus(num *big.Int, hash common.Hash, status u
 		bc.lastFinalizedBlockNumber.Store(new(big.Int).Set(num))
 	}
 
-	if bc.DPoS.AttestationStatus() == types.AttestationPending {
+	if bc.Democracy.AttestationStatus() == types.AttestationPending {
 		firstCatchup := bc.firstCatchUpNumber.Load().(*big.Int)
 		if firstCatchup.Uint64() > 0 && num.Uint64() > firstCatchup.Uint64() {
-			bc.DPoS.StartAttestation()
+			bc.Democracy.StartAttestation()
 			log.Info("StartAttestation", "firstCatchup", firstCatchup.Uint64(), "latestJustifiedNumber", num.Uint64())
 		}
 	}

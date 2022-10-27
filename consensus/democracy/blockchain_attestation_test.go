@@ -539,7 +539,7 @@ func TestVerifyCasperFFGRule(t *testing.T) {
 	require.NoError(t, err)
 
 	for _, tt := range tests {
-		result := chain.DPoS.VerifyCasperFFGRule(tt.before.SourceRangeEdge.Number.Uint64(), tt.before.TargetRangeEdge.Number.Uint64(),
+		result := chain.Democracy.VerifyCasperFFGRule(tt.before.SourceRangeEdge.Number.Uint64(), tt.before.TargetRangeEdge.Number.Uint64(),
 			tt.after.SourceRangeEdge.Number.Uint64(), tt.after.TargetRangeEdge.Number.Uint64())
 		require.True(t, result == tt.result)
 	}
