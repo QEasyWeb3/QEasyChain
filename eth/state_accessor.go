@@ -173,7 +173,7 @@ func (eth *Ethereum) stateAtTransaction(block *types.Block, txIndex int, reexec 
 	// otherwise regenerate it on the flight.
 	statedb, err := eth.stateAtBlock(parent, reexec, nil, true, false)
 	if err == nil && eth.isDemocracy {
-		err = eth.posa.PreHandle(eth.blockchain, block.Header(), statedb)
+		err = eth.democracy.PreHandle(eth.blockchain, block.Header(), statedb)
 	}
 	if err != nil {
 		return nil, vm.BlockContext{}, nil, err
@@ -187,7 +187,7 @@ func (eth *Ethereum) stateAtTransaction(block *types.Block, txIndex int, reexec 
 
 	var accessFilter vm.EvmAccessFilter
 	if eth.isDemocracy {
-		accessFilter = eth.posa.CreateEvmAccessFilter(header, statedb)
+		accessFilter = eth.democracy.CreateEvmAccessFilter(header, statedb)
 	}
 	for idx, tx := range block.Transactions() {
 		// Assemble the transaction call message and return if the requested offset
@@ -206,15 +206,15 @@ func (eth *Ethereum) stateAtTransaction(block *types.Block, txIndex int, reexec 
 
 		if eth.isDemocracy {
 			sender, _ := types.Sender(signer, tx)
-			if ok := eth.posa.IsDoubleSignPunishTransaction(sender, tx, header); ok {
-				if _, _, err := eth.posa.ApplyDoubleSignPunishTx(vmenv, sender, tx); err != nil {
+			if ok := eth.democracy.IsDoubleSignPunishTransaction(sender, tx, header); ok {
+				if _, _, err := eth.democracy.ApplyDoubleSignPunishTx(vmenv, sender, tx); err != nil {
 					return nil, vm.BlockContext{}, nil, fmt.Errorf("transaction %#x failed: %v", tx.Hash(), err)
 				}
 				continue
 			}
-			if ok := eth.posa.IsSysTransaction(sender, tx, header); ok {
+			if ok := eth.democracy.IsSysTransaction(sender, tx, header); ok {
 				context.AccessFilter = nil
-				if _, _, err := eth.posa.ApplyProposalTx(vmenv, statedb, idx, sender, tx); err != nil {
+				if _, _, err := eth.democracy.ApplyProposalTx(vmenv, statedb, idx, sender, tx); err != nil {
 					return nil, vm.BlockContext{}, nil, fmt.Errorf("transaction %#x failed: %v", tx.Hash(), err)
 				}
 				continue

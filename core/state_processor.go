@@ -84,12 +84,12 @@ func (p *StateProcessor) Process(block *types.Block, statedb *state.StateDB, cfg
 	blockContext := NewEVMBlockContext(header, p.bc, nil)
 	vmenv := vm.NewEVM(blockContext, vm.TxContext{}, statedb, p.config, cfg)
 	// Iterate over and process the individual transactions
-	posa, isDemocracy := p.engine.(consensus.Democracy)
+	democracy, isDemocracy := p.engine.(consensus.Democracy)
 	if isDemocracy {
-		if err := posa.PreHandle(p.bc, header, statedb); err != nil {
+		if err := democracy.PreHandle(p.bc, header, statedb); err != nil {
 			return nil, nil, 0, err
 		}
-		vmenv.Context.AccessFilter = posa.CreateEvmAccessFilter(header, statedb)
+		vmenv.Context.AccessFilter = democracy.CreateEvmAccessFilter(header, statedb)
 	}
 
 	// preload from and to of txs
@@ -117,19 +117,19 @@ func (p *StateProcessor) Process(block *types.Block, statedb *state.StateDB, cfg
 			if err != nil {
 				return nil, nil, 0, err
 			}
-			if err = posa.ExtraValidateOfTx(sender, tx, header); err != nil {
+			if err = democracy.ExtraValidateOfTx(sender, tx, header); err != nil {
 				return nil, nil, 0, err
 			}
 
-			if ok := posa.IsDoubleSignPunishTransaction(sender, tx, header); ok {
+			if ok := democracy.IsDoubleSignPunishTransaction(sender, tx, header); ok {
 				punishTxs = append(punishTxs, tx)
 				continue
 			}
-			if ok := posa.IsSysTransaction(sender, tx, header); ok {
+			if ok := democracy.IsSysTransaction(sender, tx, header); ok {
 				proposalTxs = append(proposalTxs, tx)
 				continue
 			}
-			if err = posa.FilterTx(sender, tx, header, statedb); err != nil {
+			if err = democracy.FilterTx(sender, tx, header, statedb); err != nil {
 				return nil, nil, 0, err
 			}
 		}

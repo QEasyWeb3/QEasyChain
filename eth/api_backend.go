@@ -227,7 +227,7 @@ func (b *EthAPIBackend) GetEVM(ctx context.Context, msg core.Message, state *sta
 		if err != nil {
 			return nil, vmError, err
 		}
-		context.AccessFilter = b.eth.posa.CreateEvmAccessFilter(header, parentState)
+		context.AccessFilter = b.eth.democracy.CreateEvmAccessFilter(header, parentState)
 	}
 	return vm.NewEVM(context, txContext, state, b.eth.blockchain.Config(), *vmConfig), vmError, nil
 }

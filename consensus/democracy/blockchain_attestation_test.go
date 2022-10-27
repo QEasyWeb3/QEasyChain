@@ -281,7 +281,7 @@ func TestAddOneAttestationToFutureCache(t *testing.T) {
 	require.True(t, len(cAs.Attestations) == 10)
 }
 
-// Shield it in advance -> bc.posa.VerifyAttestation(bc, a)
+// Shield it in advance -> bc.democracy.VerifyAttestation(bc, a)
 func TestAddOneAttestationToRecentCache(t *testing.T) {
 	chain, err := MakeFakeChain()
 	require.NoError(t, err)

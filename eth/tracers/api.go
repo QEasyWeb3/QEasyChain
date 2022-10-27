@@ -87,13 +87,13 @@ type API struct {
 	backend Backend
 
 	isDemocracy bool
-	posa        consensus.Democracy
+	democracy   consensus.Democracy
 }
 
 // NewAPI creates a new API definition for the tracing methods of the Ethereum service.
 func NewAPI(backend Backend) *API {
-	posa, isDemocracy := backend.Engine().(consensus.Democracy)
-	return &API{backend: backend, isDemocracy: isDemocracy, posa: posa}
+	democracy, isDemocracy := backend.Engine().(consensus.Democracy)
+	return &API{backend: backend, isDemocracy: isDemocracy, democracy: democracy}
 }
 
 type chainContext struct {
@@ -221,8 +221,8 @@ type blockTraceResult struct {
 type txTraceTask struct {
 	statedb              *state.StateDB // Intermediate state prepped for tracing
 	index                int            // Transaction offset in the block
-	isDoubleSignPunishTx bool           // Is posa punish double sign transaction
-	isProposalTxs        bool           // Is posa system transaction ?
+	isDoubleSignPunishTx bool           // Is democracy punish double sign transaction
+	isProposalTxs        bool           // Is democracy system transaction ?
 }
 
 // TraceChain returns the structured logs created during the execution of EVM
@@ -281,8 +281,8 @@ func (api *API) traceChain(ctx context.Context, start, end *types.Block, config 
 				header := task.block.Header()
 				blockCtx := core.NewEVMBlockContext(header, api.chainContext(localctx), nil)
 				if api.isDemocracy {
-					_ = api.posa.PreHandle(api.backend.ChainHeaderReader(), header, task.statedb)
-					blockCtx.AccessFilter = api.posa.CreateEvmAccessFilter(header, task.statedb)
+					_ = api.democracy.PreHandle(api.backend.ChainHeaderReader(), header, task.statedb)
+					blockCtx.AccessFilter = api.democracy.CreateEvmAccessFilter(header, task.statedb)
 				}
 				// Trace all the transactions contained within
 				for i, tx := range task.block.Transactions() {
@@ -299,8 +299,8 @@ func (api *API) traceChain(ctx context.Context, start, end *types.Block, config 
 						isProposalTxs        bool
 					)
 					if api.isDemocracy {
-						isDoubleSignPunishTx = api.posa.IsDoubleSignPunishTransaction(msg.From(), tx, header)
-						isProposalTxs = api.posa.IsSysTransaction(msg.From(), tx, header)
+						isDoubleSignPunishTx = api.democracy.IsDoubleSignPunishTransaction(msg.From(), tx, header)
+						isProposalTxs = api.democracy.IsSysTransaction(msg.From(), tx, header)
 
 					}
 					if isDoubleSignPunishTx {
@@ -624,8 +624,8 @@ func (api *API) traceBlock(ctx context.Context, block *types.Block, config *Trac
 	}
 	blockCtx := core.NewEVMBlockContext(block.Header(), api.chainContext(ctx), nil)
 	if api.isDemocracy {
-		_ = api.posa.PreHandle(api.backend.ChainHeaderReader(), header, statedb)
-		blockCtx.AccessFilter = api.posa.CreateEvmAccessFilter(header, statedb)
+		_ = api.democracy.PreHandle(api.backend.ChainHeaderReader(), header, statedb)
+		blockCtx.AccessFilter = api.democracy.CreateEvmAccessFilter(header, statedb)
 	}
 	blockHash := block.Hash()
 	for th := 0; th < threads; th++ {
@@ -668,8 +668,8 @@ func (api *API) traceBlock(ctx context.Context, block *types.Block, config *Trac
 		)
 		if api.isDemocracy {
 			sender, _ := types.Sender(signer, tx)
-			isDoubleSignPunishTx = api.posa.IsDoubleSignPunishTransaction(sender, tx, header)
-			isProposalTxs = api.posa.IsSysTransaction(sender, tx, header)
+			isDoubleSignPunishTx = api.democracy.IsDoubleSignPunishTransaction(sender, tx, header)
+			isProposalTxs = api.democracy.IsSysTransaction(sender, tx, header)
 		}
 		// Send the trace task over for execution
 		jobs <- &txTraceTask{statedb: statedb.Copy(), index: i, isDoubleSignPunishTx: isDoubleSignPunishTx, isProposalTxs: isProposalTxs}
@@ -679,14 +679,14 @@ func (api *API) traceBlock(ctx context.Context, block *types.Block, config *Trac
 		vmenv := vm.NewEVM(blockCtx, core.NewEVMTxContext(msg), statedb, api.backend.ChainConfig(), vm.Config{})
 		statedb.Prepare(tx.Hash(), i)
 		if isDoubleSignPunishTx {
-			if _, _, err := api.posa.ApplyDoubleSignPunishTx(vmenv, msg.From(), tx); err != nil {
+			if _, _, err := api.democracy.ApplyDoubleSignPunishTx(vmenv, msg.From(), tx); err != nil {
 				failed = err
 				break
 			}
 			continue
 		}
 		if isProposalTxs {
-			if _, _, err := api.posa.ApplyProposalTx(vmenv, statedb, i, msg.From(), tx); err != nil {
+			if _, _, err := api.democracy.ApplyProposalTx(vmenv, statedb, i, msg.From(), tx); err != nil {
 				failed = err
 				break
 			}
@@ -756,8 +756,8 @@ func (api *API) standardTraceBlockToFile(ctx context.Context, block *types.Block
 		header      = block.Header()
 	)
 	if api.isDemocracy {
-		_ = api.posa.PreHandle(api.backend.ChainHeaderReader(), header, statedb)
-		vmctx.AccessFilter = api.posa.CreateEvmAccessFilter(header, statedb)
+		_ = api.democracy.PreHandle(api.backend.ChainHeaderReader(), header, statedb)
+		vmctx.AccessFilter = api.democracy.CreateEvmAccessFilter(header, statedb)
 	}
 
 	// Check if there are any overrides: the caller may wish to enable a future
@@ -816,13 +816,13 @@ func (api *API) standardTraceBlockToFile(ctx context.Context, block *types.Block
 			isProposalTxs        bool
 		)
 		if api.isDemocracy {
-			isDoubleSignPunishTx = api.posa.IsDoubleSignPunishTransaction(msg.From(), tx, header)
-			isProposalTxs = api.posa.IsSysTransaction(msg.From(), tx, header)
+			isDoubleSignPunishTx = api.democracy.IsDoubleSignPunishTransaction(msg.From(), tx, header)
+			isProposalTxs = api.democracy.IsSysTransaction(msg.From(), tx, header)
 		}
 		if isDoubleSignPunishTx {
-			_, _, err = api.posa.ApplyDoubleSignPunishTx(vmenv, msg.From(), tx)
+			_, _, err = api.democracy.ApplyDoubleSignPunishTx(vmenv, msg.From(), tx)
 		} else if isProposalTxs {
-			_, _, err = api.posa.ApplyProposalTx(vmenv, statedb, i, msg.From(), tx)
+			_, _, err = api.democracy.ApplyProposalTx(vmenv, statedb, i, msg.From(), tx)
 		} else {
 			_, err = core.ApplyMessage(vmenv, msg, new(core.GasPool).AddGas(msg.Gas()))
 		}
@@ -889,10 +889,10 @@ func (api *API) TraceTransaction(ctx context.Context, hash common.Hash, config *
 	}
 	if api.isDemocracy {
 		tx := block.Transactions()[int(index)]
-		if ok := api.posa.IsDoubleSignPunishTransaction(msg.From(), tx, block.Header()); ok {
+		if ok := api.democracy.IsDoubleSignPunishTransaction(msg.From(), tx, block.Header()); ok {
 			return api.traceApplyDoubleSignPunishTx(ctx, msg.From(), tx, txctx, vmctx, statedb, config)
 		}
-		if ok := api.posa.IsSysTransaction(msg.From(), tx, block.Header()); ok {
+		if ok := api.democracy.IsSysTransaction(msg.From(), tx, block.Header()); ok {
 			return api.traceProposalTx(ctx, msg.From(), tx, txctx, vmctx, statedb, config)
 		}
 	}
@@ -941,7 +941,7 @@ func (api *API) TraceCall(ctx context.Context, args ethapi.TransactionArgs, bloc
 	}
 	vmctx := core.NewEVMBlockContext(block.Header(), api.chainContext(ctx), nil)
 	if api.isDemocracy {
-		vmctx.AccessFilter = api.posa.CreateEvmAccessFilter(block.Header(), statedb)
+		vmctx.AccessFilter = api.democracy.CreateEvmAccessFilter(block.Header(), statedb)
 	}
 	var traceConfig *TraceConfig
 	if config != nil {
@@ -1046,7 +1046,7 @@ func (api *API) traceApplyDoubleSignPunishTx(ctx context.Context, sender common.
 	vmenvWithoutTxCtx := vm.NewEVM(vmctx, vm.TxContext{}, statedb, api.backend.ChainConfig(), vm.Config{Debug: true, Tracer: tracer, NoBaseFee: true})
 	// Call Prepare to clear out the statedb access list
 	statedb.Prepare(txctx.TxHash, txctx.TxIndex)
-	ret, vmerr, err := api.posa.ApplyDoubleSignPunishTx(vmenvWithoutTxCtx, sender, tx)
+	ret, vmerr, err := api.democracy.ApplyDoubleSignPunishTx(vmenvWithoutTxCtx, sender, tx)
 	if err != nil {
 		return nil, fmt.Errorf("tracing failed: %w", err)
 	}
@@ -1098,7 +1098,7 @@ func (api *API) traceProposalTx(ctx context.Context, sender common.Address, tx *
 	vmctx.AccessFilter = nil
 	vmenvWithoutTxCtx := vm.NewEVM(vmctx, vm.TxContext{}, statedb, api.backend.ChainConfig(), vm.Config{Debug: true, Tracer: tracer, NoBaseFee: true})
 
-	ret, vmerr, err := api.posa.ApplyProposalTx(vmenvWithoutTxCtx, statedb, txctx.TxIndex, sender, tx)
+	ret, vmerr, err := api.democracy.ApplyProposalTx(vmenvWithoutTxCtx, statedb, txctx.TxIndex, sender, tx)
 	if err != nil {
 		return nil, fmt.Errorf("tracing failed: %w", err)
 	}

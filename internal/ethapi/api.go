@@ -817,7 +817,7 @@ func (s *PublicBlockChainAPI) GetBlockByHash(ctx context.Context, hash common.Ha
 }
 
 func (s *PublicBlockChainAPI) GetDoubleSignPunishTransactionsByBlockNumber(ctx context.Context, number rpc.BlockNumber) ([]*RPCTransaction, error) {
-	posa, isDemocracy := s.b.Engine().(consensus.Democracy)
+	democracy, isDemocracy := s.b.Engine().(consensus.Democracy)
 	if !isDemocracy {
 		return nil, errors.New("not a Democracy engine")
 	}
@@ -826,11 +826,11 @@ func (s *PublicBlockChainAPI) GetDoubleSignPunishTransactionsByBlockNumber(ctx c
 	if err != nil || block == nil {
 		return nil, err
 	}
-	return s.getDoubleSignPunishTransactions(block, posa)
+	return s.getDoubleSignPunishTransactions(block, democracy)
 }
 
 func (s *PublicBlockChainAPI) GetDoubleSignPunishTransactionsByBlockHash(ctx context.Context, hash common.Hash) ([]*RPCTransaction, error) {
-	posa, isDemocracy := s.b.Engine().(consensus.Democracy)
+	democracy, isDemocracy := s.b.Engine().(consensus.Democracy)
 	if !isDemocracy {
 		return nil, errors.New("not a Democracy engine")
 	}
@@ -838,10 +838,10 @@ func (s *PublicBlockChainAPI) GetDoubleSignPunishTransactionsByBlockHash(ctx con
 	if err != nil || block == nil {
 		return nil, err
 	}
-	return s.getDoubleSignPunishTransactions(block, posa)
+	return s.getDoubleSignPunishTransactions(block, democracy)
 }
 
-func (s *PublicBlockChainAPI) getDoubleSignPunishTransactions(block *types.Block, posa consensus.Democracy) ([]*RPCTransaction, error) {
+func (s *PublicBlockChainAPI) getDoubleSignPunishTransactions(block *types.Block, democracy consensus.Democracy) ([]*RPCTransaction, error) {
 	header := block.Header()
 	bhash := block.Hash()
 	bnumber := block.NumberU64()
@@ -850,7 +850,7 @@ func (s *PublicBlockChainAPI) getDoubleSignPunishTransactions(block *types.Block
 	signer := types.MakeSigner(s.b.ChainConfig(), header.Number)
 	for i, tx := range txs {
 		sender, _ := types.Sender(signer, tx)
-		if yes := posa.IsDoubleSignPunishTransaction(sender, tx, header); yes {
+		if yes := democracy.IsDoubleSignPunishTransaction(sender, tx, header); yes {
 			transactions = append(transactions, newRPCTransaction(tx, bhash, bnumber, uint64(i), nil, s.b.ChainConfig()))
 		}
 	}
@@ -858,7 +858,7 @@ func (s *PublicBlockChainAPI) getDoubleSignPunishTransactions(block *types.Block
 }
 
 func (s *PublicBlockChainAPI) GetSysTransactionsByBlockNumber(ctx context.Context, number rpc.BlockNumber) ([]*RPCTransaction, error) {
-	posa, isDemocracy := s.b.Engine().(consensus.Democracy)
+	democracy, isDemocracy := s.b.Engine().(consensus.Democracy)
 	if !isDemocracy {
 		return nil, errors.New("not a Democracy engine")
 	}
@@ -867,11 +867,11 @@ func (s *PublicBlockChainAPI) GetSysTransactionsByBlockNumber(ctx context.Contex
 	if err != nil || block == nil {
 		return nil, err
 	}
-	return s.getSysTransactions(block, posa)
+	return s.getSysTransactions(block, democracy)
 }
 
 func (s *PublicBlockChainAPI) GetSysTransactionsByBlockHash(ctx context.Context, hash common.Hash) ([]*RPCTransaction, error) {
-	posa, isDemocracy := s.b.Engine().(consensus.Democracy)
+	democracy, isDemocracy := s.b.Engine().(consensus.Democracy)
 	if !isDemocracy {
 		return nil, errors.New("not a Democracy engine")
 	}
@@ -879,10 +879,10 @@ func (s *PublicBlockChainAPI) GetSysTransactionsByBlockHash(ctx context.Context,
 	if err != nil || block == nil {
 		return nil, err
 	}
-	return s.getSysTransactions(block, posa)
+	return s.getSysTransactions(block, democracy)
 }
 
-func (s *PublicBlockChainAPI) getSysTransactions(block *types.Block, posa consensus.Democracy) ([]*RPCTransaction, error) {
+func (s *PublicBlockChainAPI) getSysTransactions(block *types.Block, democracy consensus.Democracy) ([]*RPCTransaction, error) {
 	header := block.Header()
 	bhash := block.Hash()
 	bnumber := block.NumberU64()
@@ -891,7 +891,7 @@ func (s *PublicBlockChainAPI) getSysTransactions(block *types.Block, posa consen
 	signer := types.MakeSigner(s.b.ChainConfig(), header.Number)
 	for i, tx := range txs {
 		sender, _ := types.Sender(signer, tx)
-		if yes := posa.IsSysTransaction(sender, tx, header); yes {
+		if yes := democracy.IsSysTransaction(sender, tx, header); yes {
 			transactions = append(transactions, newRPCTransaction(tx, bhash, bnumber, uint64(i), nil, s.b.ChainConfig()))
 		}
 	}

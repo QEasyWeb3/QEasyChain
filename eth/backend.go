@@ -83,7 +83,7 @@ type Ethereum struct {
 	accountManager *accounts.Manager
 
 	isDemocracy bool
-	posa        consensus.Democracy
+	democracy   consensus.Democracy
 
 	bloomRequests     chan chan *bloombits.Retrieval // Channel receiving bloom data retrieval requests
 	bloomIndexer      *core.ChainIndexer             // Bloom indexer operating during block imports
@@ -160,7 +160,7 @@ func New(stack *node.Node, config *ethconfig.Config) (*Ethereum, error) {
 		bloomIndexer:      core.NewBloomIndexer(chainDb, params.BloomBitsBlocks, params.BloomConfirms),
 		p2pServer:         stack.Server(),
 	}
-	eth.posa, eth.isDemocracy = eth.engine.(consensus.Democracy)
+	eth.democracy, eth.isDemocracy = eth.engine.(consensus.Democracy)
 
 	bcVersion := rawdb.ReadDatabaseVersion(chainDb)
 	var dbVer = "<nil>"

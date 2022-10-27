@@ -134,7 +134,7 @@ type worker struct {
 	chain       *core.BlockChain
 
 	// Is the engine a Democracy engine?
-	posa        consensus.Democracy
+	democracy   consensus.Democracy
 	isDemocracy bool
 
 	// Feeds
@@ -199,13 +199,13 @@ type worker struct {
 }
 
 func newWorker(config *Config, chainConfig *params.ChainConfig, engine consensus.Engine, eth Backend, mux *event.TypeMux, isLocalBlock func(*types.Block) bool, init bool) *worker {
-	posa, isDemocracy := engine.(consensus.Democracy)
+	democracy, isDemocracy := engine.(consensus.Democracy)
 	worker := &worker{
 		config:             config,
 		chainConfig:        chainConfig,
 		engine:             engine,
 		isDemocracy:        isDemocracy,
-		posa:               posa,
+		democracy:          democracy,
 		eth:                eth,
 		mux:                mux,
 		chain:              eth.BlockChain(),
@@ -802,7 +802,7 @@ func (w *worker) commitTransactions(txs *types.TransactionsByPriceAndNonce, coin
 	gasLimit := w.current.header.GasLimit
 	if w.current.gasPool == nil {
 		if w.isDemocracy {
-			w.current.gasPool = new(core.GasPool).AddGas(w.posa.CalculateGasPool(w.current.header))
+			w.current.gasPool = new(core.GasPool).AddGas(w.democracy.CalculateGasPool(w.current.header))
 		} else {
 			w.current.gasPool = new(core.GasPool).AddGas(gasLimit)
 		}
@@ -857,7 +857,7 @@ func (w *worker) commitTransactions(txs *types.TransactionsByPriceAndNonce, coin
 
 		// consensus related validation
 		if w.isDemocracy {
-			err := w.posa.FilterTx(from, tx, w.current.header, w.current.state)
+			err := w.democracy.FilterTx(from, tx, w.current.header, w.current.state)
 			if err != nil {
 				log.Trace("Ignoring consensus invalid transaction", "hash", tx.Hash().String(), "from", from.String(), "to", tx.To(), "err", err)
 				txs.Pop()
@@ -986,11 +986,11 @@ func (w *worker) commitNewWork(interrupt *int32, noempty bool, timestamp int64) 
 	// Create the current work task and check any fork transitions needed
 	env := w.current
 	if w.isDemocracy {
-		if err := w.posa.PreHandle(w.chain, header, env.state); err != nil {
+		if err := w.democracy.PreHandle(w.chain, header, env.state); err != nil {
 			log.Error("Failed to apply system contract upgrade", "err", err)
 			return
 		}
-		env.accessFilter = w.posa.CreateEvmAccessFilter(header, env.state)
+		env.accessFilter = w.democracy.CreateEvmAccessFilter(header, env.state)
 	}
 	// Accumulate the uncles for the current block
 	uncles := make([]*types.Header, 0, 2)

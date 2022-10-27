@@ -127,10 +127,10 @@ func GetCanCreateFn(chain ChainContext) vm.CanCreateFunc {
 			return true
 		}
 	}
-	posa, isDemocracy := chain.Engine().(consensus.Democracy)
+	democracy, isDemocracy := chain.Engine().(consensus.Democracy)
 	if isDemocracy {
 		return func(db vm.StateDB, address common.Address, isContract bool, height *big.Int) bool {
-			return posa.CanCreate(db, address, isContract, height)
+			return democracy.CanCreate(db, address, isContract, height)
 		}
 	}
 	return func(db vm.StateDB, address common.Address, isContract bool, height *big.Int) bool {
