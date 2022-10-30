@@ -59,7 +59,8 @@ const (
 
 // Democracy proof-of-stake-authority protocol constants.
 var (
-	epochLength = uint64(30000) // Default number of blocks after which to checkpoint and reset the pending votes
+	BlockReward = big.NewInt(1e+18) // Block reward in wei for successfully sealing a block.
+	epochLength = uint64(30000)     // Default number of blocks after which to checkpoint and reset the pending votes
 
 	extraVanity = 32                     // Fixed number of extra-data prefix bytes reserved for validator vanity
 	extraSeal   = crypto.SignatureLength // Fixed number of extra-data suffix bytes reserved for validator seal
