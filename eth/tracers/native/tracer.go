@@ -37,7 +37,7 @@ package native
 import (
 	"errors"
 
-	"github.com/ethereum/go-ethereum/eth/tracers"
+	"github.com/QEasyWeb3/QEasyChain/eth/tracers"
 )
 
 // init registers itself this packages as a lookup for tracers.

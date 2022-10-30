@@ -20,12 +20,12 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/ethereum/go-ethereum/cmd/devp2p/internal/ethtest"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/internal/utesting"
-	"github.com/ethereum/go-ethereum/p2p"
-	"github.com/ethereum/go-ethereum/p2p/rlpx"
-	"github.com/ethereum/go-ethereum/rlp"
+	"github.com/QEasyWeb3/QEasyChain/cmd/devp2p/internal/ethtest"
+	"github.com/QEasyWeb3/QEasyChain/crypto"
+	"github.com/QEasyWeb3/QEasyChain/internal/utesting"
+	"github.com/QEasyWeb3/QEasyChain/p2p"
+	"github.com/QEasyWeb3/QEasyChain/p2p/rlpx"
+	"github.com/QEasyWeb3/QEasyChain/rlp"
 	"gopkg.in/urfave/cli.v1"
 )
 

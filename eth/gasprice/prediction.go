@@ -7,10 +7,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ethereum/go-ethereum/core"
-	"github.com/ethereum/go-ethereum/event"
-	"github.com/ethereum/go-ethereum/log"
-	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/QEasyWeb3/QEasyChain/core"
+	"github.com/QEasyWeb3/QEasyChain/event"
+	"github.com/QEasyWeb3/QEasyChain/log"
+	"github.com/QEasyWeb3/QEasyChain/rpc"
 )
 
 var (

@@ -20,9 +20,9 @@ import (
 	"math/rand"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/rawdb"
-	"github.com/ethereum/go-ethereum/ethdb/memorydb"
+	"github.com/QEasyWeb3/QEasyChain/common"
+	"github.com/QEasyWeb3/QEasyChain/core/rawdb"
+	"github.com/QEasyWeb3/QEasyChain/ethdb/memorydb"
 )
 
 // Tests that given a database with random data content, all parts of a snapshot

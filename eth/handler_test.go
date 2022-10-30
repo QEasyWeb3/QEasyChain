@@ -21,17 +21,17 @@ import (
 	"sort"
 	"sync"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/consensus/ethash"
-	"github.com/ethereum/go-ethereum/core"
-	"github.com/ethereum/go-ethereum/core/rawdb"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/core/vm"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/eth/downloader"
-	"github.com/ethereum/go-ethereum/ethdb"
-	"github.com/ethereum/go-ethereum/event"
-	"github.com/ethereum/go-ethereum/params"
+	"github.com/QEasyWeb3/QEasyChain/common"
+	"github.com/QEasyWeb3/QEasyChain/consensus/ethash"
+	"github.com/QEasyWeb3/QEasyChain/core"
+	"github.com/QEasyWeb3/QEasyChain/core/rawdb"
+	"github.com/QEasyWeb3/QEasyChain/core/types"
+	"github.com/QEasyWeb3/QEasyChain/core/vm"
+	"github.com/QEasyWeb3/QEasyChain/crypto"
+	"github.com/QEasyWeb3/QEasyChain/eth/downloader"
+	"github.com/QEasyWeb3/QEasyChain/ethdb"
+	"github.com/QEasyWeb3/QEasyChain/event"
+	"github.com/QEasyWeb3/QEasyChain/params"
 )
 
 var (

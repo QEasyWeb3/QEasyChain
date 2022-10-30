@@ -20,9 +20,9 @@ package rawdb
 import (
 	"bytes"
 	"encoding/binary"
-	"github.com/ethereum/go-ethereum/metrics"
+	"github.com/QEasyWeb3/QEasyChain/metrics"
 
-	"github.com/ethereum/go-ethereum/common"
+	"github.com/QEasyWeb3/QEasyChain/common"
 )
 
 // The fields below define the low level database schema prefixing.

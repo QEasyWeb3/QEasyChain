@@ -25,12 +25,12 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/contracts/checkpointoracle"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/log"
-	"github.com/ethereum/go-ethereum/params"
+	"github.com/QEasyWeb3/QEasyChain/accounts/abi/bind"
+	"github.com/QEasyWeb3/QEasyChain/common"
+	"github.com/QEasyWeb3/QEasyChain/contracts/checkpointoracle"
+	"github.com/QEasyWeb3/QEasyChain/crypto"
+	"github.com/QEasyWeb3/QEasyChain/log"
+	"github.com/QEasyWeb3/QEasyChain/params"
 )
 
 // CheckpointOracle is responsible for offering the latest stable checkpoint

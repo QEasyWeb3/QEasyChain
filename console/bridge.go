@@ -24,13 +24,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/QEasyWeb3/QEasyChain/accounts/scwallet"
+	"github.com/QEasyWeb3/QEasyChain/accounts/usbwallet"
+	"github.com/QEasyWeb3/QEasyChain/common/hexutil"
+	"github.com/QEasyWeb3/QEasyChain/console/prompt"
+	"github.com/QEasyWeb3/QEasyChain/internal/jsre"
+	"github.com/QEasyWeb3/QEasyChain/rpc"
 	"github.com/dop251/goja"
-	"github.com/ethereum/go-ethereum/accounts/scwallet"
-	"github.com/ethereum/go-ethereum/accounts/usbwallet"
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/console/prompt"
-	"github.com/ethereum/go-ethereum/internal/jsre"
-	"github.com/ethereum/go-ethereum/rpc"
 )
 
 // bridge is a collection of JavaScript utility methods to bride the .js runtime

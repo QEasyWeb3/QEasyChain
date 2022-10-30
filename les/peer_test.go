@@ -25,14 +25,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core"
-	"github.com/ethereum/go-ethereum/core/forkid"
-	"github.com/ethereum/go-ethereum/core/rawdb"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/p2p"
-	"github.com/ethereum/go-ethereum/p2p/enode"
-	"github.com/ethereum/go-ethereum/params"
+	"github.com/QEasyWeb3/QEasyChain/common"
+	"github.com/QEasyWeb3/QEasyChain/core"
+	"github.com/QEasyWeb3/QEasyChain/core/forkid"
+	"github.com/QEasyWeb3/QEasyChain/core/rawdb"
+	"github.com/QEasyWeb3/QEasyChain/core/types"
+	"github.com/QEasyWeb3/QEasyChain/p2p"
+	"github.com/QEasyWeb3/QEasyChain/p2p/enode"
+	"github.com/QEasyWeb3/QEasyChain/params"
 )
 
 type testServerPeerSub struct {

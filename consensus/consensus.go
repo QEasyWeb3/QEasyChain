@@ -20,14 +20,14 @@ package consensus
 import (
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/ethdb"
+	"github.com/QEasyWeb3/QEasyChain/ethdb"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/state"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/core/vm"
-	"github.com/ethereum/go-ethereum/params"
-	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/QEasyWeb3/QEasyChain/common"
+	"github.com/QEasyWeb3/QEasyChain/core/state"
+	"github.com/QEasyWeb3/QEasyChain/core/types"
+	"github.com/QEasyWeb3/QEasyChain/core/vm"
+	"github.com/QEasyWeb3/QEasyChain/params"
+	"github.com/QEasyWeb3/QEasyChain/rpc"
 )
 
 var (

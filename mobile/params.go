@@ -19,8 +19,8 @@
 package geth
 
 import (
-	"github.com/ethereum/go-ethereum/p2p/enode"
-	"github.com/ethereum/go-ethereum/params"
+	"github.com/QEasyWeb3/QEasyChain/p2p/enode"
+	"github.com/QEasyWeb3/QEasyChain/params"
 )
 
 // MainnetGenesis returns the JSON spec to use for the main Ethereum network. It

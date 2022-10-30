@@ -20,11 +20,11 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/ethereum/go-ethereum/consensus"
-	"github.com/ethereum/go-ethereum/core/state"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/params"
-	"github.com/ethereum/go-ethereum/trie"
+	"github.com/QEasyWeb3/QEasyChain/consensus"
+	"github.com/QEasyWeb3/QEasyChain/core/state"
+	"github.com/QEasyWeb3/QEasyChain/core/types"
+	"github.com/QEasyWeb3/QEasyChain/params"
+	"github.com/QEasyWeb3/QEasyChain/trie"
 )
 
 // BlockValidator is responsible for validating block headers, uncles and

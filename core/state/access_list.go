@@ -17,7 +17,7 @@
 package state
 
 import (
-	"github.com/ethereum/go-ethereum/common"
+	"github.com/QEasyWeb3/QEasyChain/common"
 )
 
 type accessList struct {

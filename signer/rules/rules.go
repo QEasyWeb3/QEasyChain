@@ -22,12 +22,12 @@ import (
 	"os"
 	"strings"
 
+	"github.com/QEasyWeb3/QEasyChain/internal/ethapi"
+	"github.com/QEasyWeb3/QEasyChain/internal/jsre/deps"
+	"github.com/QEasyWeb3/QEasyChain/log"
+	"github.com/QEasyWeb3/QEasyChain/signer/core"
+	"github.com/QEasyWeb3/QEasyChain/signer/storage"
 	"github.com/dop251/goja"
-	"github.com/ethereum/go-ethereum/internal/ethapi"
-	"github.com/ethereum/go-ethereum/internal/jsre/deps"
-	"github.com/ethereum/go-ethereum/log"
-	"github.com/ethereum/go-ethereum/signer/core"
-	"github.com/ethereum/go-ethereum/signer/storage"
 )
 
 var (

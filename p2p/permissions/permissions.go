@@ -2,8 +2,8 @@ package permissions
 
 import (
 	"encoding/json"
-	"github.com/ethereum/go-ethereum/log"
-	"github.com/ethereum/go-ethereum/p2p/enode"
+	"github.com/QEasyWeb3/QEasyChain/log"
+	"github.com/QEasyWeb3/QEasyChain/p2p/enode"
 	"io/ioutil"
 	"os"
 	"path/filepath"

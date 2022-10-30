@@ -24,13 +24,13 @@ import (
 	"net"
 	"sync"
 
-	"github.com/ethereum/go-ethereum/event"
-	"github.com/ethereum/go-ethereum/log"
-	"github.com/ethereum/go-ethereum/node"
-	"github.com/ethereum/go-ethereum/p2p"
-	"github.com/ethereum/go-ethereum/p2p/enode"
-	"github.com/ethereum/go-ethereum/p2p/simulations/pipes"
-	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/QEasyWeb3/QEasyChain/event"
+	"github.com/QEasyWeb3/QEasyChain/log"
+	"github.com/QEasyWeb3/QEasyChain/node"
+	"github.com/QEasyWeb3/QEasyChain/p2p"
+	"github.com/QEasyWeb3/QEasyChain/p2p/enode"
+	"github.com/QEasyWeb3/QEasyChain/p2p/simulations/pipes"
+	"github.com/QEasyWeb3/QEasyChain/rpc"
 	"github.com/gorilla/websocket"
 )
 

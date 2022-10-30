@@ -17,13 +17,13 @@
 package eth
 
 import (
-	"github.com/ethereum/go-ethereum/eth/protocols/cons"
+	"github.com/QEasyWeb3/QEasyChain/eth/protocols/cons"
 	"math/big"
 	"sync"
 	"time"
 
-	"github.com/ethereum/go-ethereum/eth/protocols/eth"
-	"github.com/ethereum/go-ethereum/eth/protocols/snap"
+	"github.com/QEasyWeb3/QEasyChain/eth/protocols/eth"
+	"github.com/QEasyWeb3/QEasyChain/eth/protocols/snap"
 )
 
 // ethPeerInfo represents a short summary of the `eth` sub-protocol metadata known

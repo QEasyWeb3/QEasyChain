@@ -5,7 +5,7 @@ package core
 import (
 	"encoding/json"
 
-	"github.com/ethereum/go-ethereum/common"
+	"github.com/QEasyWeb3/QEasyChain/common"
 )
 
 var _ = (*initMarshaling)(nil)

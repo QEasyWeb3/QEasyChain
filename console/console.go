@@ -28,12 +28,12 @@ import (
 	"strings"
 	"syscall"
 
+	"github.com/QEasyWeb3/QEasyChain/console/prompt"
+	"github.com/QEasyWeb3/QEasyChain/internal/jsre"
+	"github.com/QEasyWeb3/QEasyChain/internal/jsre/deps"
+	"github.com/QEasyWeb3/QEasyChain/internal/web3ext"
+	"github.com/QEasyWeb3/QEasyChain/rpc"
 	"github.com/dop251/goja"
-	"github.com/ethereum/go-ethereum/console/prompt"
-	"github.com/ethereum/go-ethereum/internal/jsre"
-	"github.com/ethereum/go-ethereum/internal/jsre/deps"
-	"github.com/ethereum/go-ethereum/internal/web3ext"
-	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/mattn/go-colorable"
 	"github.com/peterh/liner"
 )

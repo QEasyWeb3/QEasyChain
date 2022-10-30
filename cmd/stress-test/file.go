@@ -8,7 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/QEasyWeb3/QEasyChain/crypto"
 )
 
 func writeAccounts(path string, accounts []*ecdsa.PrivateKey) error {

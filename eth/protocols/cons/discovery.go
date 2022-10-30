@@ -17,7 +17,7 @@
 package cons
 
 import (
-	"github.com/ethereum/go-ethereum/rlp"
+	"github.com/QEasyWeb3/QEasyChain/rlp"
 )
 
 // enrEntry is the ENR entry which advertises `cons` protocol on the discovery.

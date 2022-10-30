@@ -2,19 +2,19 @@ package systemcontract
 
 import (
 	"fmt"
-	"github.com/ethereum/go-ethereum/contracts/system"
+	"github.com/QEasyWeb3/QEasyChain/contracts/system"
 	"math"
 	"math/big"
 
-	"github.com/ethereum/go-ethereum/accounts/abi"
+	"github.com/QEasyWeb3/QEasyChain/accounts/abi"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core"
-	"github.com/ethereum/go-ethereum/core/state"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/core/vm"
-	"github.com/ethereum/go-ethereum/log"
-	"github.com/ethereum/go-ethereum/params"
+	"github.com/QEasyWeb3/QEasyChain/common"
+	"github.com/QEasyWeb3/QEasyChain/core"
+	"github.com/QEasyWeb3/QEasyChain/core/state"
+	"github.com/QEasyWeb3/QEasyChain/core/types"
+	"github.com/QEasyWeb3/QEasyChain/core/vm"
+	"github.com/QEasyWeb3/QEasyChain/log"
+	"github.com/QEasyWeb3/QEasyChain/params"
 )
 
 type CallContext struct {

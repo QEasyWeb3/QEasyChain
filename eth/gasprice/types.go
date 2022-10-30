@@ -1,6 +1,6 @@
 package gasprice
 
-import "github.com/ethereum/go-ethereum/core/types"
+import "github.com/QEasyWeb3/QEasyChain/core/types"
 
 // TxByPrice sorts the txs descending by price
 type TxByPrice types.Transactions

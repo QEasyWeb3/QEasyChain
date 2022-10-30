@@ -21,11 +21,11 @@ import (
 	"math/big"
 	"sync"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/eth/protocols/cons"
-	"github.com/ethereum/go-ethereum/eth/protocols/eth"
-	"github.com/ethereum/go-ethereum/eth/protocols/snap"
-	"github.com/ethereum/go-ethereum/p2p"
+	"github.com/QEasyWeb3/QEasyChain/common"
+	"github.com/QEasyWeb3/QEasyChain/eth/protocols/cons"
+	"github.com/QEasyWeb3/QEasyChain/eth/protocols/eth"
+	"github.com/QEasyWeb3/QEasyChain/eth/protocols/snap"
+	"github.com/QEasyWeb3/QEasyChain/p2p"
 )
 
 var (

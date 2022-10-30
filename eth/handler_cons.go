@@ -18,9 +18,9 @@ package eth
 
 import (
 	"errors"
-	"github.com/ethereum/go-ethereum/core"
-	"github.com/ethereum/go-ethereum/eth/protocols/cons"
-	"github.com/ethereum/go-ethereum/p2p/enode"
+	"github.com/QEasyWeb3/QEasyChain/core"
+	"github.com/QEasyWeb3/QEasyChain/eth/protocols/cons"
+	"github.com/QEasyWeb3/QEasyChain/p2p/enode"
 	"sync/atomic"
 )
 

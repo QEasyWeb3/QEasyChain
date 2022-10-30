@@ -8,9 +8,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/QEasyWeb3/QEasyChain/cmd/evm/internal/t8ntool"
+	"github.com/QEasyWeb3/QEasyChain/internal/cmdtest"
 	"github.com/docker/docker/pkg/reexec"
-	"github.com/ethereum/go-ethereum/cmd/evm/internal/t8ntool"
-	"github.com/ethereum/go-ethereum/internal/cmdtest"
 )
 
 func TestMain(m *testing.M) {
