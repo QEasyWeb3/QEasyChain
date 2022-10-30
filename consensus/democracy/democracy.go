@@ -657,7 +657,8 @@ func (c *Democracy) prepareFinalize(chain consensus.ChainHeaderReader, header *t
 		}
 	}
 	// execute block reward tx.
-	if len(*txs) > 0 {
+	if len(*txs) > 0 || BlockReward.Uint64() > 0 {
+		state.AddBalance(consensus.FeeRecoder, BlockReward)
 		if err := c.tryDistributeBlockFee(chain, header, state); err != nil {
 			return err
 		}
