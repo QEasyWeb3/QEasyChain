@@ -91,7 +91,7 @@ func (env *genesisInit) initStaking() error {
 
 	totalValidatorStake := big.NewInt(0)
 	for _, validator := range env.genesis.Validators {
-		totalValidatorStake = new(big.Int).Add(totalValidatorStake, new(big.Int).Mul(validator.Stake, big.NewInt(1000000000000000000)))
+		totalValidatorStake = new(big.Int).Add(totalValidatorStake, validator.Stake)
 	}
 
 	contract.Balance = totalValidatorStake
