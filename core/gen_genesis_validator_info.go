@@ -16,14 +16,14 @@ var _ = (*validatorInfoMarshaling)(nil)
 // MarshalJSON marshals as JSON.
 func (v ValidatorInfo) MarshalJSON() ([]byte, error) {
 	type ValidatorInfo struct {
-		Singer           common.Address        `json:"singer"         gencodec:"required"`
+		Signer           common.Address        `json:"signer"         gencodec:"required"`
 		Owner            common.Address        `json:"owner"         gencodec:"required"`
 		Rate             *math.HexOrDecimal256 `json:"rate,omitempty"`
 		Stake            *math.HexOrDecimal256 `json:"stake,omitempty"`
 		AcceptDelegation bool                  `json:"acceptDelegation,omitempty"`
 	}
 	var enc ValidatorInfo
-	enc.Singer = v.Singer
+	enc.Signer = v.Signer
 	enc.Owner = v.Owner
 	enc.Rate = (*math.HexOrDecimal256)(v.Rate)
 	enc.Stake = (*math.HexOrDecimal256)(v.Stake)
@@ -34,7 +34,7 @@ func (v ValidatorInfo) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON unmarshals from JSON.
 func (v *ValidatorInfo) UnmarshalJSON(input []byte) error {
 	type ValidatorInfo struct {
-		Singer           *common.Address       `json:"singer"         gencodec:"required"`
+		Signer           *common.Address       `json:"signer"         gencodec:"required"`
 		Owner            *common.Address       `json:"owner"         gencodec:"required"`
 		Rate             *math.HexOrDecimal256 `json:"rate,omitempty"`
 		Stake            *math.HexOrDecimal256 `json:"stake,omitempty"`
@@ -44,10 +44,10 @@ func (v *ValidatorInfo) UnmarshalJSON(input []byte) error {
 	if err := json.Unmarshal(input, &dec); err != nil {
 		return err
 	}
-	if dec.Singer == nil {
-		return errors.New("missing required field 'singer' for ValidatorInfo")
+	if dec.Signer == nil {
+		return errors.New("missing required field 'signer' for ValidatorInfo")
 	}
-	v.Singer = *dec.Singer
+	v.Signer = *dec.Signer
 	if dec.Owner == nil {
 		return errors.New("missing required field 'owner' for ValidatorInfo")
 	}

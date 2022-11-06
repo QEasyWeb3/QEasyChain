@@ -101,7 +101,7 @@ type Init struct {
 
 // ValidatorInfo represents the info of inital validators
 type ValidatorInfo struct {
-	Singer           common.Address `json:"singer"         gencodec:"required"`
+	Signer           common.Address `json:"signer"         gencodec:"required"`
 	Owner            common.Address `json:"owner"         gencodec:"required"`
 	Rate             *big.Int       `json:"rate,omitempty"`
 	Stake            *big.Int       `json:"stake,omitempty"`
@@ -109,7 +109,7 @@ type ValidatorInfo struct {
 }
 
 // makeValidator creates ValidatorInfo
-func makeValidator(singer, owner, rate, stake string, acceptDelegation bool) ValidatorInfo {
+func makeValidator(signer, owner, rate, stake string, acceptDelegation bool) ValidatorInfo {
 	rateNum, ok := new(big.Int).SetString(rate, 10)
 	if !ok {
 		panic("Failed to make validator info due to invalid rate")
@@ -120,7 +120,7 @@ func makeValidator(singer, owner, rate, stake string, acceptDelegation bool) Val
 	}
 
 	return ValidatorInfo{
-		Singer:           common.HexToAddress(singer),
+		Signer:           common.HexToAddress(signer),
 		Owner:            common.HexToAddress(owner),
 		Rate:             rateNum,
 		Stake:            stakeNum,
