@@ -32,12 +32,12 @@ const (
       "inputs": [
         {
           "internalType": "bytes32",
-          "name": "_punishHash",
+          "name": "punishHash",
           "type": "bytes32"
         },
         {
           "internalType": "address",
-          "name": "_val",
+          "name": "singer",
           "type": "address"
         }
       ],
@@ -63,7 +63,7 @@ const (
       "inputs": [
         {
           "internalType": "uint8",
-          "name": "_count",
+          "name": "count",
           "type": "uint8"
         }
       ],
@@ -82,12 +82,12 @@ const (
       "inputs": [
         {
           "internalType": "address",
-          "name": "val",
+          "name": "singer",
           "type": "address"
         },
         {
           "internalType": "address",
-          "name": "manager",
+          "name": "owner",
           "type": "address"
         },
         {
@@ -117,11 +117,6 @@ const (
           "internalType": "address",
           "name": "adminAddress",
           "type": "address"
-        },
-        {
-          "internalType": "uint8",
-          "name": "maxValidators",
-          "type": "uint8"
         },
         {
           "internalType": "uint256",
@@ -172,7 +167,7 @@ const (
       "inputs": [
         {
           "internalType": "address",
-          "name": "_val",
+          "name": "singer",
           "type": "address"
         }
       ],
