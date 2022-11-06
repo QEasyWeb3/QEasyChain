@@ -77,7 +77,7 @@ func DistributeBlockFee(ctx *CallContext, fee *big.Int) error {
 		log.Error("Can't pack data for distributeBlockFee", "error", err)
 		return err
 	}
-	if _, err := CallContractWithValue(ctx, ctx.Header.Coinbase, ctx.GetContractAddress(contractName), data, fee); err != nil {
+	if _, err := CallContractWithValue(ctx, system.LocalAddress, ctx.GetContractAddress(contractName), data, fee); err != nil {
 		log.Error("distributeBlockFee failed", "fee", fee, "err", err)
 		return err
 	}
