@@ -37,7 +37,7 @@ const (
         },
         {
           "internalType": "address",
-          "name": "singer",
+          "name": "signer",
           "type": "address"
         }
       ],
@@ -82,7 +82,7 @@ const (
       "inputs": [
         {
           "internalType": "address",
-          "name": "singer",
+          "name": "signer",
           "type": "address"
         },
         {
@@ -167,7 +167,7 @@ const (
       "inputs": [
         {
           "internalType": "address",
-          "name": "singer",
+          "name": "signer",
           "type": "address"
         }
       ],
