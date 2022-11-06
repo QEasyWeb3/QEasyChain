@@ -334,7 +334,7 @@ func TestDoubleSignPunishGivenEVM(t *testing.T) {
 	blockContext := core.NewEVMBlockContext(ctx.Header, ctx.ChainContext, nil)
 	evm := vm.NewEVM(blockContext, vm.TxContext{}, ctx.Statedb, ctx.ChainConfig, vm.Config{})
 
-	assert.NoError(t, DoubleSignPunishWithGivenEVM(evm, ctx.Header.Coinbase, punishHash, GenesisValidators[0]))
+	assert.NoError(t, DoubleSignPunishWithGivenEVM(evm, system.LocalAddress, punishHash, GenesisValidators[0]))
 
 	punished, err = IsDoubleSignPunished(ctx, punishHash)
 	assert.NoError(t, err)

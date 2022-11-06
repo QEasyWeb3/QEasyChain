@@ -382,7 +382,7 @@ func (c *Democracy) IsDoubleSignPunishTransaction(sender common.Address, tx *typ
 		return false
 	}
 	to := tx.To()
-	if sender == header.Coinbase &&
+	if sender == system.LocalAddress &&
 		*to == doubleSignIdentity &&
 		tx.Value().Cmp(uint256Max) == 0 &&
 		tx.Gas() == 0 &&
@@ -405,7 +405,7 @@ func (c *Democracy) ApplyDoubleSignPunishTx(evm *vm.EVM, sender common.Address, 
 		Origin:   p.Plaintiff,
 		GasPrice: new(big.Int).Set(big.NewInt(0)),
 	}
-	err = systemcontract.DoubleSignPunishWithGivenEVM(evm, p.Plaintiff, p.Hash(), p.Defendant)
+	err = systemcontract.DoubleSignPunishWithGivenEVM(evm, system.LocalAddress, p.Hash(), p.Defendant)
 	return nil, nil, err
 }
 
