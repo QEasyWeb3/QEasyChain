@@ -138,11 +138,11 @@ func (env *genesisInit) initValidators() ([]byte, error) {
 	extra = append(extra, env.header.Extra[:extraVanity]...)
 	for _, v := range env.genesis.Validators {
 		if _, err := env.callContract(system.SysContractName, "initValidator",
-			v.Address, v.Manager, v.Rate, v.Stake, v.AcceptDelegation); err != nil {
+			v.Singer, v.Owner, v.Rate, v.Stake, v.AcceptDelegation); err != nil {
 			return env.header.Extra, err
 		}
-		extra = append(extra, v.Address[:]...)
-		activeSet = append(activeSet, v.Address)
+		extra = append(extra, v.Singer[:]...)
+		activeSet = append(activeSet, v.Singer)
 	}
 	extra = append(extra, env.header.Extra[len(env.header.Extra)-extraSeal:]...)
 	env.header.Extra = extra

@@ -16,15 +16,15 @@ var _ = (*validatorInfoMarshaling)(nil)
 // MarshalJSON marshals as JSON.
 func (v ValidatorInfo) MarshalJSON() ([]byte, error) {
 	type ValidatorInfo struct {
-		Address          common.Address        `json:"address"         gencodec:"required"`
-		Manager          common.Address        `json:"manager"         gencodec:"required"`
+		Singer           common.Address        `json:"singer"         gencodec:"required"`
+		Owner            common.Address        `json:"owner"         gencodec:"required"`
 		Rate             *math.HexOrDecimal256 `json:"rate,omitempty"`
 		Stake            *math.HexOrDecimal256 `json:"stake,omitempty"`
 		AcceptDelegation bool                  `json:"acceptDelegation,omitempty"`
 	}
 	var enc ValidatorInfo
-	enc.Address = v.Address
-	enc.Manager = v.Manager
+	enc.Singer = v.Singer
+	enc.Owner = v.Owner
 	enc.Rate = (*math.HexOrDecimal256)(v.Rate)
 	enc.Stake = (*math.HexOrDecimal256)(v.Stake)
 	enc.AcceptDelegation = v.AcceptDelegation
@@ -34,8 +34,8 @@ func (v ValidatorInfo) MarshalJSON() ([]byte, error) {
 // UnmarshalJSON unmarshals from JSON.
 func (v *ValidatorInfo) UnmarshalJSON(input []byte) error {
 	type ValidatorInfo struct {
-		Address          *common.Address       `json:"address"         gencodec:"required"`
-		Manager          *common.Address       `json:"manager"         gencodec:"required"`
+		Singer           *common.Address       `json:"singer"         gencodec:"required"`
+		Owner            *common.Address       `json:"owner"         gencodec:"required"`
 		Rate             *math.HexOrDecimal256 `json:"rate,omitempty"`
 		Stake            *math.HexOrDecimal256 `json:"stake,omitempty"`
 		AcceptDelegation *bool                 `json:"acceptDelegation,omitempty"`
@@ -44,14 +44,14 @@ func (v *ValidatorInfo) UnmarshalJSON(input []byte) error {
 	if err := json.Unmarshal(input, &dec); err != nil {
 		return err
 	}
-	if dec.Address == nil {
-		return errors.New("missing required field 'address' for ValidatorInfo")
+	if dec.Singer == nil {
+		return errors.New("missing required field 'singer' for ValidatorInfo")
 	}
-	v.Address = *dec.Address
-	if dec.Manager == nil {
-		return errors.New("missing required field 'manager' for ValidatorInfo")
+	v.Singer = *dec.Singer
+	if dec.Owner == nil {
+		return errors.New("missing required field 'owner' for ValidatorInfo")
 	}
-	v.Manager = *dec.Manager
+	v.Owner = *dec.Owner
 	if dec.Rate != nil {
 		v.Rate = (*big.Int)(dec.Rate)
 	}
