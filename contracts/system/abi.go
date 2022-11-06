@@ -501,7 +501,7 @@ var (
 var (
 	MaxValidators        = uint8(21)
 	MinSelfStake         = big.NewInt(100)
-	ShareOutBonusPercent = uint8(10)
+	ShareOutBonusPercent = uint8(80)
 	LocalAddress         = common.HexToAddress("0x0000000000000000000000000000000000000000")
 )
 
