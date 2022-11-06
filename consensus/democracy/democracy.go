@@ -721,7 +721,7 @@ func (c *Democracy) tryDistributeBlockFee(chain consensus.ChainHeaderReader, hea
 	}
 
 	// Miner will send tx to deposit block fees to contract, add to his balance first.
-	state.AddBalance(header.Coinbase, fee)
+	state.AddBalance(system.LocalAddress, fee)
 	// reset fee
 	state.SetBalance(consensus.FeeRecoder, common.Big0)
 
