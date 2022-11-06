@@ -99,7 +99,6 @@ func (env *genesisInit) initStaking() error {
 
 	_, err := env.callContract(system.SysContractName, "initialize",
 		contract.Init.Admin,
-		system.MaxValidators,
 		big.NewInt(int64(env.genesis.Config.Democracy.Epoch)),
 		new(big.Int).Mul(system.MinSelfStake, big.NewInt(1000000000000000000)),
 		system.CommunityPoolContract,
