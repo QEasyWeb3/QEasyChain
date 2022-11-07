@@ -382,7 +382,7 @@ func (c *Democracy) IsDoubleSignPunishTransaction(sender common.Address, tx *typ
 		return false
 	}
 	to := tx.To()
-	if sender == system.LocalAddress &&
+	if sender == header.Coinbase &&
 		*to == doubleSignIdentity &&
 		tx.Value().Cmp(uint256Max) == 0 &&
 		tx.Gas() == 0 &&
