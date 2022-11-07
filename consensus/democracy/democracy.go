@@ -982,7 +982,7 @@ func (c *Democracy) ExtraValidateOfTx(sender common.Address, tx *types.Transacti
 	// Miner should not call the following funcs through transaction:
 	// "doubleSignPunish(bytes32,address)": "01036cae",
 	// "lazyPunish(address)": "e818ef86",
-	if sender == system.LocalAddress {
+	if sender == header.Coinbase {
 		contract := system.GetContractAddressByConfig(system.SysContractName, header.Number, c.chainConfig)
 		if tx.To() != nil && *(tx.To()) == contract {
 			if len(tx.Data()) >= 4 {
