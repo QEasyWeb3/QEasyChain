@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/QEasyWeb3/QEasyChain/accounts/abi/bind"
@@ -24,6 +26,7 @@ var commandStressTestNormal = cli.Command{
 		accountNumberFlag,
 		totalTxsFlag,
 		threadsFlag,
+		pathFlag,
 	},
 	Action: utils.MigrateFlags(stressTestNormal),
 }
@@ -39,6 +42,7 @@ var commandStressTestToken = cli.Command{
 		threadsFlag,
 		tokenFlag,
 		decimalFlag,
+		pathFlag,
 	},
 	Action: utils.MigrateFlags(stressTestToken),
 }
@@ -75,11 +79,10 @@ func stressTest(ctx *cli.Context, token common.Address, decimal int) error {
 	if total < accountAmount {
 		return errors.New("total tx amount should bigger than account amount")
 	}
-
 	first := false
 	var accounts []*bind.TransactOpts
 	var toGen int
-	keys, err := loadAccounts(getStorePath())
+	keys, err := loadAccounts(getStorePath(ctx))
 	if err != nil {
 		log.Warn("load accounts failed", "err", err)
 		first = true
@@ -101,11 +104,11 @@ func stressTest(ctx *cli.Context, token common.Address, decimal int) error {
 
 		accounts = append(accounts, genAccounts...)
 		if first {
-			if err := writeAccounts(getStorePath(), genKeys); err != nil {
+			if err := writeAccounts(getStorePath(ctx), genKeys); err != nil {
 				return err
 			}
 		} else {
-			if err := appendAccounts(getStorePath(), genKeys); err != nil {
+			if err := appendAccounts(getStorePath(ctx), genKeys); err != nil {
 				return err
 			}
 		}
@@ -144,4 +147,12 @@ func stressTest(ctx *cli.Context, token common.Address, decimal int) error {
 	log.Info("send transaction over", "cost(milliseconds)", time.Now().Sub(start).Milliseconds())
 
 	return nil
+}
+
+func getStorePath(ctx *cli.Context) string {
+	path := ctx.String(pathFlag.Name)
+	if len(path) > 0 {
+		return path
+	}
+	return filepath.Join(os.Getenv("HOME"), storePath)
 }

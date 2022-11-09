@@ -5,10 +5,8 @@ import (
 	"crypto/ecdsa"
 	"encoding/hex"
 	"fmt"
-	"os"
-	"path/filepath"
-
 	"github.com/QEasyWeb3/QEasyChain/crypto"
+	"os"
 )
 
 func writeAccounts(path string, accounts []*ecdsa.PrivateKey) error {
@@ -64,8 +62,4 @@ func loadAccounts(path string) ([]*ecdsa.PrivateKey, error) {
 	}
 
 	return accounts, scanner.Err()
-}
-
-func getStorePath() string {
-	return filepath.Join(os.Getenv("HOME"), storePath)
 }

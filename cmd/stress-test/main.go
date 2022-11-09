@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"path/filepath"
 
 	"github.com/QEasyWeb3/QEasyChain/common"
 	"github.com/QEasyWeb3/QEasyChain/common/fdlimit"
@@ -87,6 +88,11 @@ var (
 		Name:  "decimal",
 		Value: defaultDecimal,
 		Usage: "The decimal of token",
+	}
+	pathFlag = cli.StringFlag{
+		Name:  "path",
+		Value: filepath.Join(os.Getenv("HOME"), storePath),
+		Usage: "The token address of test",
 	}
 )
 
