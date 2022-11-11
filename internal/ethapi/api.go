@@ -1824,6 +1824,11 @@ func (s *PublicTransactionPoolAPI) GetTransactionReceipt(ctx context.Context, ha
 	} else {
 		fields["status"] = hexutil.Uint(receipt.Status)
 	}
+	status, err := s.b.BlockPredictStatus(ctx, blockHash, rpc.BlockNumber(blockNumber))
+	if err != nil {
+		return nil, err
+	}
+	fields["predictStatus"] = status
 	if receipt.Logs == nil {
 		fields["logs"] = [][]*types.Log{}
 	}
@@ -1831,24 +1836,6 @@ func (s *PublicTransactionPoolAPI) GetTransactionReceipt(ctx context.Context, ha
 	if receipt.ContractAddress != (common.Address{}) {
 		fields["contractAddress"] = receipt.ContractAddress
 	}
-	return fields, nil
-}
-
-func (s *PublicTransactionPoolAPI) GetTransactionReceiptExt(ctx context.Context, hash common.Hash) (map[string]interface{}, error) {
-	fields, err := s.GetTransactionReceipt(ctx, hash)
-	if err != nil {
-		return nil, err
-	}
-	if fields == nil {
-		return nil, nil
-	}
-	blockHash := fields["blockHash"].(common.Hash)
-	blockNumber := rpc.BlockNumber(fields["blockNumber"].(hexutil.Uint64))
-	status, err := s.b.BlockPredictStatus(ctx, blockHash, blockNumber)
-	if err != nil {
-		return nil, err
-	}
-	fields["predictStatus"] = status
 	return fields, nil
 }
 

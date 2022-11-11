@@ -99,13 +99,8 @@ func (ec *EthereumClient) GetTransactionInBlock(ctx *Context, hash *Hash, index 
 
 // GetTransactionReceipt returns the receipt of a transaction by transaction hash.
 // Note that the receipt is not available for pending transactions.
-func (ec *EthereumClient) GetTransactionReceipt(ctx *Context, hash *Hash) (receipt *Receipt, _ error) {
+func (ec *EthereumClient) GetTransactionReceipt(ctx *Context, hash *Hash) (receipt *ReceiptExt, _ error) {
 	rawReceipt, err := ec.client.TransactionReceipt(ctx.context, hash.hash)
-	return &Receipt{rawReceipt}, err
-}
-
-func (ec *EthereumClient) GetTransactionReceiptExt(ctx *Context, hash *Hash) (receipt *ReceiptExt, _ error) {
-	rawReceipt, err := ec.client.TransactionReceiptExt(ctx.context, hash.hash)
 	return &ReceiptExt{rawReceipt}, err
 }
 
