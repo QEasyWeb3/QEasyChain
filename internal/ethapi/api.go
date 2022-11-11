@@ -801,6 +801,11 @@ func (s *PublicBlockChainAPI) GetBlockByNumber(ctx context.Context, number rpc.B
 				response[field] = nil
 			}
 		}
+		status, err := s.b.BlockPredictStatus(ctx, block.Hash(), number)
+		if err != nil {
+			return nil, err
+		}
+		response["predictStatus"] = status
 		return response, err
 	}
 	return nil, err
@@ -811,7 +816,16 @@ func (s *PublicBlockChainAPI) GetBlockByNumber(ctx context.Context, number rpc.B
 func (s *PublicBlockChainAPI) GetBlockByHash(ctx context.Context, hash common.Hash, fullTx bool) (map[string]interface{}, error) {
 	block, err := s.b.BlockByHash(ctx, hash)
 	if block != nil {
-		return s.rpcMarshalBlock(ctx, block, true, fullTx)
+		fields, err := s.rpcMarshalBlock(ctx, block, true, fullTx)
+		if err != nil {
+			return nil, err
+		}
+		status, err := s.b.BlockPredictStatus(ctx, hash, rpc.BlockNumber(block.Number().Uint64()))
+		if err != nil {
+			return nil, err
+		}
+		fields["predictStatus"] = status
+		return fields, nil
 	}
 	return nil, err
 }
