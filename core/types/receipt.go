@@ -18,7 +18,6 @@ package types
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -55,6 +54,7 @@ type Receipt struct {
 	// Consensus fields: These fields are defined by the Yellow Paper
 	Type              uint8  `json:"type,omitempty"`
 	PostState         []byte `json:"root"`
+	PredictStatus     uint8  `json:"predictStatus"`
 	Status            uint64 `json:"status"`
 	CumulativeGasUsed uint64 `json:"cumulativeGasUsed" gencodec:"required"`
 	Bloom             Bloom  `json:"logsBloom"         gencodec:"required"`
@@ -71,31 +71,6 @@ type Receipt struct {
 	BlockHash        common.Hash `json:"blockHash,omitempty"`
 	BlockNumber      *big.Int    `json:"blockNumber,omitempty"`
 	TransactionIndex uint        `json:"transactionIndex"`
-}
-
-type ReceiptExt struct {
-	Receipt
-	PredictStatus uint8 `json:"predictStatus"`
-}
-
-func (r *ReceiptExt) UnmarshalJSON(data []byte) error {
-	tmpPart1 := struct {
-		Receipt
-	}{}
-	tmpPart2 := struct {
-		PredictStatus uint8 `json:"predictStatus"`
-	}{}
-	if err := json.Unmarshal(data, &tmpPart1); err != nil {
-		fmt.Printf("failed to parse object: %v", err)
-		return err
-	}
-	if err := json.Unmarshal(data, &tmpPart2); err != nil {
-		fmt.Printf("failed to parse object: %v", err)
-		return err
-	}
-	(r).Receipt = tmpPart1.Receipt
-	(r).PredictStatus = tmpPart2.PredictStatus
-	return nil
 }
 
 type receiptMarshaling struct {
