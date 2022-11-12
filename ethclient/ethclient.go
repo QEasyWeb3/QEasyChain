@@ -23,6 +23,8 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"strconv"
+	"strings"
 
 	"github.com/QEasyWeb3/QEasyChain"
 	"github.com/QEasyWeb3/QEasyChain/common"
@@ -92,6 +94,33 @@ func (ec *Client) BlockNumber(ctx context.Context) (uint64, error) {
 	var result hexutil.Uint64
 	err := ec.c.CallContext(ctx, &result, "eth_blockNumber")
 	return uint64(result), err
+}
+
+type FinalizedBlockInfo struct {
+	Number string
+	Hash   common.Hash
+}
+
+func parseUint64orHex(str string) (uint64, error) {
+	base := 10
+	if strings.HasPrefix(str, "0x") {
+		str = str[2:]
+		base = 16
+	}
+	return strconv.ParseUint(str, base, 64)
+}
+
+func (ec *Client) LastFinalizedBlockInfo(ctx context.Context) (uint64, common.Hash, error) {
+	var result *FinalizedBlockInfo
+	err := ec.c.CallContext(ctx, &result, "eth_getLastFinalizedBlockInfo")
+	if err != nil {
+		return 0, common.Hash{}, err
+	}
+	n, err := parseUint64orHex(result.Number)
+	if err != nil {
+		return 0, common.Hash{}, err
+	}
+	return n, result.Hash, err
 }
 
 type rpcBlock struct {
