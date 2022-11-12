@@ -18,6 +18,7 @@ func (r Receipt) MarshalJSON() ([]byte, error) {
 	type Receipt struct {
 		Type              hexutil.Uint64 `json:"type,omitempty"`
 		PostState         hexutil.Bytes  `json:"root"`
+		PredictStatus     uint8          `json:"predictStatus"`
 		Status            hexutil.Uint64 `json:"status"`
 		CumulativeGasUsed hexutil.Uint64 `json:"cumulativeGasUsed" gencodec:"required"`
 		Bloom             Bloom          `json:"logsBloom"         gencodec:"required"`
@@ -32,6 +33,7 @@ func (r Receipt) MarshalJSON() ([]byte, error) {
 	var enc Receipt
 	enc.Type = hexutil.Uint64(r.Type)
 	enc.PostState = r.PostState
+	enc.PredictStatus = r.PredictStatus
 	enc.Status = hexutil.Uint64(r.Status)
 	enc.CumulativeGasUsed = hexutil.Uint64(r.CumulativeGasUsed)
 	enc.Bloom = r.Bloom
@@ -50,6 +52,7 @@ func (r *Receipt) UnmarshalJSON(input []byte) error {
 	type Receipt struct {
 		Type              *hexutil.Uint64 `json:"type,omitempty"`
 		PostState         *hexutil.Bytes  `json:"root"`
+		PredictStatus     *uint8          `json:"predictStatus"`
 		Status            *hexutil.Uint64 `json:"status"`
 		CumulativeGasUsed *hexutil.Uint64 `json:"cumulativeGasUsed" gencodec:"required"`
 		Bloom             *Bloom          `json:"logsBloom"         gencodec:"required"`
@@ -70,6 +73,9 @@ func (r *Receipt) UnmarshalJSON(input []byte) error {
 	}
 	if dec.PostState != nil {
 		r.PostState = *dec.PostState
+	}
+	if dec.PredictStatus != nil {
+		r.PredictStatus = *dec.PredictStatus
 	}
 	if dec.Status != nil {
 		r.Status = uint64(*dec.Status)
