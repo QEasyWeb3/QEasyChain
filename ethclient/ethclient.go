@@ -123,6 +123,15 @@ func (ec *Client) LastFinalizedBlockInfo(ctx context.Context) (uint64, common.Ha
 	return n, result.Hash, err
 }
 
+func (ec *Client) BlockPredictStatus(ctx context.Context, hash common.Hash, number rpc.BlockNumber) (uint8, error) {
+	var result uint8
+	err := ec.c.CallContext(ctx, &result, "eth_getBlockPredictStatus", hash, number)
+	if err != nil {
+		return 0, err
+	}
+	return result, nil
+}
+
 type rpcBlock struct {
 	Hash         common.Hash      `json:"hash"`
 	Transactions []rpcTransaction `json:"transactions"`
