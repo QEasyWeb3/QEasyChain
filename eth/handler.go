@@ -74,6 +74,10 @@ type txPool interface {
 	// SubscribeNewTxsEvent should return an event subscription of
 	// NewTxsEvent and send events to the given channel.
 	SubscribeNewTxsEvent(chan<- core.NewTxsEvent) event.Subscription
+
+	// SubscribeReannoTxsEvent should return an event subscription of
+	// ReannoTxsEvent and send events to the given channel.
+	SubscribeReannoTxsEvent(chan<- core.ReannoTxsEvent) event.Subscription
 }
 
 // handlerConfig is the collection of initialization parameters to create a full
@@ -115,6 +119,8 @@ type handler struct {
 	eventMux      *event.TypeMux
 	txsCh         chan core.NewTxsEvent
 	txsSub        event.Subscription
+	reannoTxsCh   chan core.ReannoTxsEvent
+	reannoTxsSub  event.Subscription
 	naCh          chan core.NewAttestationEvent
 	naSub         event.Subscription
 	njfCh         chan core.NewJustifiedOrFinalizedBlockEvent
@@ -425,6 +431,12 @@ func (h *handler) Start(maxPeers int) {
 	h.txsSub = h.txpool.SubscribeNewTxsEvent(h.txsCh)
 	go h.txBroadcastLoop()
 
+	// announce local pending transactions again
+	h.wg.Add(1)
+	h.reannoTxsCh = make(chan core.ReannoTxsEvent, txChanSize)
+	h.reannoTxsSub = h.txpool.SubscribeReannoTxsEvent(h.reannoTxsCh)
+	go h.txReannounceLoop()
+
 	// broadcast mined blocks
 	h.wg.Add(1)
 	h.minedBlockSub = h.eventMux.Subscribe(core.NewMinedBlockEvent{})
@@ -449,6 +461,7 @@ func (h *handler) Start(maxPeers int) {
 
 func (h *handler) Stop() {
 	h.txsSub.Unsubscribe()        // quits txBroadcastLoop
+	h.reannoTxsSub.Unsubscribe()  // quits txReannounceLoop
 	h.minedBlockSub.Unsubscribe() // quits blockBroadcastLoop
 	h.naSub.Unsubscribe()         // quits newAttestationBroadcastLoop
 	h.njfSub.Unsubscribe()        // quits newJustifiedOrFinalizedBlockBroadcastLoop
@@ -546,6 +559,24 @@ func (h *handler) BroadcastTransactions(txs types.Transactions) {
 		"tx packs", directPeers, "broadcast txs", directCount)
 }
 
+// ReannounceTransactions will announce a batch of local pending transactions
+// to a square root of all peers.
+func (h *handler) ReannounceTransactions(txs types.Transactions) {
+	hashes := make([]common.Hash, 0, txs.Len())
+	for _, tx := range txs {
+		hashes = append(hashes, tx.Hash())
+	}
+
+	// Announce transactions hash to a batch of peers
+	peersCount := uint(math.Sqrt(float64(h.peers.len())))
+	peers := h.peers.headPeers(peersCount)
+	for _, peer := range peers {
+		peer.AsyncSendPooledTransactionHashes(hashes)
+	}
+	log.Debug("Transaction reannounce", "txs", len(txs),
+		"announce packs", peersCount, "announced hashes", peersCount*uint(len(hashes)))
+}
+
 func (h *handler) BroadcastAttestationToOtherNodes(a *types.Attestation) {
 	peers := h.peers.peersWithoutAttestation(a.Hash())
 	//log.Debug("BroadcastAttestationToOtherNodes", "peers", len(peers),
@@ -588,6 +619,19 @@ func (h *handler) txBroadcastLoop() {
 		case event := <-h.txsCh:
 			h.BroadcastTransactions(event.Txs)
 		case <-h.txsSub.Err():
+			return
+		}
+	}
+}
+
+// txReannounceLoop announces local pending transactions to connected peers again.
+func (h *handler) txReannounceLoop() {
+	defer h.wg.Done()
+	for {
+		select {
+		case event := <-h.reannoTxsCh:
+			h.ReannounceTransactions(event.Txs)
+		case <-h.reannoTxsSub.Err():
 			return
 		}
 	}
