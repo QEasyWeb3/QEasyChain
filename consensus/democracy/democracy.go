@@ -792,6 +792,10 @@ func (c *Democracy) Authorize(validator common.Address, signFn ValidatorFn, sign
 	c.attestationStatus = types.AttestationPending
 }
 
+func (c *Democracy) IsReady() bool {
+	return c.isReady
+}
+
 // Seal implements consensus.Engine, attempting to create a sealed block using
 // the local signing credentials.
 func (c *Democracy) Seal(chain consensus.ChainHeaderReader, block *types.Block, results chan<- *types.Block, stop <-chan struct{}) error {

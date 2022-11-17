@@ -175,7 +175,7 @@ func (bc *BlockChain) processAttestationOnHead(head *types.Header) {
 		}
 		firstCatchup = bc.firstCatchUpNumber.Load().(*big.Int)
 		if firstCatchup.Uint64() > 0 && head.Number.Uint64() > firstCatchup.Uint64()+attestationDelay &&
-			head.Number.Uint64()-firstCatchup.Uint64()-attestationDelay >= unableSureBlockStateInterval {
+			(head.Number.Uint64()-firstCatchup.Uint64()-attestationDelay >= unableSureBlockStateInterval || !bc.Democracy.IsReady()) {
 			bc.Democracy.StartAttestation()
 			log.Info("✨StartAttestation", "firstCatchup", firstCatchup.Uint64(), "currentHeight", head.Number.Uint64())
 		}

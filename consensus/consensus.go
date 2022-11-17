@@ -161,6 +161,7 @@ type Democracy interface {
 
 	// IsReadyAttest Whether it meets the conditions for executing interest
 	IsReadyAttest() bool
+	IsReady() bool
 	AttestationStatus() uint8
 	StartAttestation()
 
