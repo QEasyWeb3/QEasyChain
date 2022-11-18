@@ -2430,13 +2430,13 @@ func TestTransactionPendingReannouce(t *testing.T) {
 	blockchain := &testBlockChain{1000000, statedb, new(event.Feed)}
 
 	config := testTxPoolConfig
-	// This ReannounceTime will be modified to time.Minute when creating tx_pool.
-	config.ReannounceTime = time.Second
+	// This ReannounceCheck will be modified to time.Minute when creating tx_pool.
+	config.ReannounceCheck = false
 	reannounceInterval = time.Second
 
 	pool := NewTxPool(config, params.TestChainConfig, blockchain)
-	// Modify ReannounceTime to trigger quicker.
-	pool.config.ReannounceTime = time.Second
+	// Modify ReannounceCheck to trigger quicker.
+	pool.config.ReannounceCheck = false
 	defer pool.Stop()
 
 	key, _ := crypto.GenerateKey()

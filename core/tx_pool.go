@@ -54,7 +54,7 @@ const (
 	txMaxSize = 4 * txSlotSize // 128KB
 
 	// txReannoMaxNum is the maximum number of transactions a reannounce action can include.
-	txReannoMaxNum = 1024
+	txReannoMaxNum = 4096
 )
 
 var (
@@ -94,7 +94,7 @@ var (
 var (
 	evictionInterval    = time.Minute                     // Time interval to check for evictable transactions
 	statsReportInterval = 8 * time.Second                 // Time interval to report transaction pool stats
-	reannounceInterval  = time.Minute     // Time interval to check for reannounce transactions
+	reannounceInterval  = 3 * time.Second                 // Time interval to check for reannounce transactions
 	PreservedAddress    = map[common.Address]interface{}{ // System preserved addresses
 		consensus.FeeRecoder: nil,
 	}
@@ -177,9 +177,9 @@ type TxPoolConfig struct {
 	AccountQueue uint64 // Maximum number of non-executable transaction slots permitted per account
 	GlobalQueue  uint64 // Maximum number of non-executable transaction slots for all accounts
 
-	Lifetime time.Duration // Maximum amount of time non-executable transaction are queued
-	ReannounceTime time.Duration // Duration for announcing local pending transactions again
-	JamConfig TxJamConfig
+	Lifetime        time.Duration // Maximum amount of time non-executable transaction are queued
+	ReannounceCheck bool          // Duration for announcing local pending transactions again
+	JamConfig       TxJamConfig
 }
 
 // DefaultTxPoolConfig contains the default configurations for the transaction
@@ -196,9 +196,9 @@ var DefaultTxPoolConfig = TxPoolConfig{
 	AccountQueue: 32,
 	GlobalQueue:  1024,
 
-	Lifetime: 30 * time.Minute,
-	ReannounceTime: 10 * 365 * 24 * time.Hour,
-	JamConfig: DefaultJamConfig,
+	Lifetime:        30 * time.Minute,
+	ReannounceCheck: false,
+	JamConfig:       DefaultJamConfig,
 }
 
 // sanitize checks the provided user configurations and changes anything that's
@@ -237,10 +237,6 @@ func (config *TxPoolConfig) sanitize() TxPoolConfig {
 		log.Warn("Sanitizing invalid txpool lifetime", "provided", conf.Lifetime, "updated", DefaultTxPoolConfig.Lifetime)
 		conf.Lifetime = DefaultTxPoolConfig.Lifetime
 	}
-	if conf.ReannounceTime < time.Minute {
-		log.Warn("Sanitizing invalid txpool reannounce time", "provided", conf.ReannounceTime, "updated", time.Minute)
-		conf.ReannounceTime = time.Minute
-	}
 	return conf
 }
 
@@ -252,15 +248,15 @@ func (config *TxPoolConfig) sanitize() TxPoolConfig {
 // current state) and future transactions. Transactions move between those
 // two states over time as they are received and processed.
 type TxPool struct {
-	config      TxPoolConfig
-	chainconfig *params.ChainConfig
-	chain       blockChain
-	gasPrice    *big.Int
-	txFeed      event.Feed
+	config       TxPoolConfig
+	chainconfig  *params.ChainConfig
+	chain        blockChain
+	gasPrice     *big.Int
+	txFeed       event.Feed
 	reannoTxFeed event.Feed // Event feed for announcing transactions again
-	scope       event.SubscriptionScope
-	signer      types.Signer
-	mu          sync.RWMutex
+	scope        event.SubscriptionScope
+	signer       types.Signer
+	mu           sync.RWMutex
 
 	istanbul bool // Fork indicator whether we are in the istanbul stage.
 	eip2718  bool // Fork indicator whether we are using EIP-2718 type transactions.
@@ -389,10 +385,10 @@ func (pool *TxPool) loop() {
 	var (
 		prevPending, prevQueued, prevStales int
 		// Start the stats reporting and transaction eviction tickers
-		report  = time.NewTicker(statsReportInterval)
-		evict   = time.NewTicker(evictionInterval)
+		report     = time.NewTicker(statsReportInterval)
+		evict      = time.NewTicker(evictionInterval)
 		reannounce = time.NewTicker(reannounceInterval)
-		journal = time.NewTicker(pool.config.Rejournal)
+		journal    = time.NewTicker(pool.config.Rejournal)
 		// Track the previous head headers for transaction reorgs
 		head = pool.chain.CurrentBlock()
 	)
@@ -450,32 +446,33 @@ func (pool *TxPool) loop() {
 			pool.mu.Unlock()
 
 		case <-reannounce.C:
-			pool.mu.RLock()
-			reannoTxs := func() []*types.Transaction {
-				txs := make([]*types.Transaction, 0)
-				for addr, list := range pool.pending {
-					if !pool.locals.contains(addr) {
-						continue
-					}
+			if pool.config.ReannounceCheck {
+				pool.mu.RLock()
+				reannoTxs := func() []*types.Transaction {
+					txs := make([]*types.Transaction, 0)
+					for addr, list := range pool.pending {
+						if !pool.locals.contains(addr) {
+							continue
+						}
 
-					for _, tx := range list.Flatten() {
-						// Default ReannounceTime is 10 years, won't announce by default.
-						if time.Since(tx.Time()) < pool.config.ReannounceTime {
-							break
-						}
-						txs = append(txs, tx)
-						if len(txs) >= txReannoMaxNum {
-							return txs
+						for _, tx := range list.Flatten() {
+							// Default ReannounceCheck is 10 years, won't announce by default.
+							if time.Since(tx.Time()) < 10*time.Minute {
+								break
+							}
+							txs = append(txs, tx)
+							if len(txs) >= txReannoMaxNum {
+								return txs
+							}
 						}
 					}
+					return txs
+				}()
+				pool.mu.RUnlock()
+				if len(reannoTxs) > 0 {
+					pool.reannoTxFeed.Send(ReannoTxsEvent{reannoTxs})
 				}
-				return txs
-			}()
-			pool.mu.RUnlock()
-			if len(reannoTxs) > 0 {
-				pool.reannoTxFeed.Send(ReannoTxsEvent{reannoTxs})
 			}
-
 		// Handle local transaction journal rotation
 		case <-journal.C:
 			if pool.journal != nil {
