@@ -353,6 +353,7 @@ func (g *Genesis) ToBlock(db ethdb.Database) *types.Block {
 			"Staking":       gInit.initStaking,
 			"CommunityPool": gInit.initCommunityPool,
 			"AddressList":   gInit.initAddressList,
+			"OnChainDao":    gInit.initOnChainDao,
 		} {
 			if err = initSystemContract(); err != nil {
 				log.Crit("Failed to init system contract", "contract", name, "err", err)

@@ -83,9 +83,8 @@ var (
 		LondonBlock:         big.NewInt(0),
 		EarthBlock:          nil,
 		Democracy: &DemocracyConfig{
-			Period: 3,
-			Epoch:  200,
-
+			Period:                3,
+			Epoch:                 200,
 			AttestationDelay:      2,
 			EnableDevVerification: true,
 		},

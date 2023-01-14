@@ -126,6 +126,15 @@ func (env *genesisInit) initAddressList() error {
 	return err
 }
 
+func (env *genesisInit) initOnChainDao() error {
+	contract, ok := env.genesis.Alloc[system.OnChainDaoContract]
+	if !ok {
+		return errors.New("CommunityPool Contract is missing in genesis!")
+	}
+	_, err := env.callContract(system.OnChainDaoContractName, "initialize", contract.Init.Admin)
+	return err
+}
+
 // initValidators add validators into Staking contracts
 // and set validator addresses to header extra data
 // and return new header extra data
